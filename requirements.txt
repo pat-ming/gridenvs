@@ -1,0 +1,6 @@
+torch
+transformers>=5
+accelerate
+numpy
+scikit-learn
+pytest
