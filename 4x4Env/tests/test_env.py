@@ -156,3 +156,15 @@ def test_counterfactual_score_reads_direction():
     assert out["score"] == pytest.approx(-1.0)
     assert counterfactual_score([{"V": [0], "shown": [1], "action": None}], cs) is None
     assert counterfactual_score([{"V": [0], "shown": None, "action": (0, 0, 0)}], cs) is None
+
+
+def test_noise_line_token_length_matches_true_line():
+    """Skipped unless transformers and the Qwen3 tokenizer are available locally."""
+    transformers = pytest.importorskip("transformers")
+    try:
+        tok = transformers.AutoTokenizer.from_pretrained("Qwen/Qwen3-0.6B", local_files_only=True)
+    except OSError:
+        pytest.skip("Qwen3 tokenizer is not cached")
+    count = lambda s: len(tok(s, add_special_tokens=False).input_ids)
+    for n in range(11):
+        assert count(format_feedback(list(range(10))[:n])) == count(format_feedback([NOISE_ITEM] * n))

@@ -1,6 +1,3 @@
-torch
-transformers>=5
-accelerate
 numpy
-scikit-learn
 pytest
+transformers  # optional: only for the noise-line token test

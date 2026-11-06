@@ -21,7 +21,7 @@ from instances import VMAX, VMIN
 
 MODES = ("none", "true", "noise", "counterfactual")
 # Under the Qwen3 tokenizer "□" takes as many tokens as a single digit in this line, while
-# "#" does not ("#," is one token). tests/test_llm.py checks this against the real tokenizer.
+# "#" does not ("#," is one token). tests/test_env.py checks this against the real tokenizer.
 NOISE_ITEM = "□"
 ACTION_RE = re.compile(r"EDIT\s+([0-3])\s+([0-3])\s+(\d+)")
 
