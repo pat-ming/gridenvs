@@ -9,13 +9,18 @@ next observation, so they work with any model.
 
 ```bash
 pip install -r requirements.txt
-cd 4x4Env
+cd 4x4Env        # or SudokuEnv
 python -m pytest tests -q
 ```
 
 Run scripts from inside the environment's folder, because its modules import each other by name.
+Both folders have a `constraints.py` and an `instances.py`, so use one environment per Python
+process. Otherwise Python reuses whichever of those modules it imported first.
 
-## The task
+There are two environments: [`4x4Env`](#4x4env-the-task) and [`SudokuEnv`](#sudokuenv). Both offer
+the same four modes and return observations the same way.
+
+## 4x4Env: the task
 
 An instance is a 4x4 grid of integers 0–9 plus `K` constraints. The grid starts from a valid
 solution corrupted by `m` random edits, so it can be solved in `m` edits or fewer.
@@ -129,4 +134,69 @@ These came up when trying the environments on Qwen3-0.6B:
 | `constraints.py` | Constraint types and `violations()`, the single source of truth for V(s) |
 | `instances.py` | Instance generation and constraint sets |
 | `grid_env.py` | `GridEnv` and `counterfactual_score` |
+| `tests/test_env.py` | Environment tests |
+
+## SudokuEnv
+
+An instance is a solved 9x9 Sudoku board corrupted by `m` random writes, so it can be solved in `m`
+writes or fewer. There's one constraint set, with `K = 27`: every row, column and box must hold each
+digit 1–9 exactly once.
+
+| Index `k` | Constraint |
+|---|---|
+| 0–8 | Rows 0–8 |
+| 9–17 | Columns 0–8 |
+| 18–26 | Boxes 0–8, left to right and then top to bottom |
+
+- **Action:** one reply per turn, containing `WRITE v r c`, which writes digit `v` at row `r`, column
+  `c`. Note the order: the value comes first, unlike `EDIT r c v` in `4x4Env`. Any cell can be
+  overwritten. If a reply has several writes, the last one counts. An invalid reply uses up the turn
+  and changes nothing.
+- **Reward:** the same as `4x4Env`. `R = 1` if the whole board is valid after turn `H`, otherwise 0,
+  with no intermediate reward. Use `H >= m`, or some instances can't be solved.
+
+The four modes are the ones in [the table above](#the-environments), and you use them the same way.
+There's one difference: indices can have two digits here, so a noise item repeats the filler to
+match (`□` or `□□`), which keeps the line's token length matched to E_C.
+
+```python
+from instances import make_instance
+from sudoku_env import SudokuEnv
+
+env = SudokuEnv(mode="true", H=4, seed=0)
+inst = make_instance(m=2, seed=123)
+obs = env.reset(inst)              # first user message: constraints, instructions, board
+done = False
+while not done:
+    reply = my_policy(obs)                        # any text containing WRITE v r c
+    obs, reward, done, info = env.step(reply)     # later observations hold only the board and line
+
+info["log"]     # per turn: V(s_t), what the line claimed, the reply, the parsed action
+info["solved"]  # whether the board is valid now
+```
+
+The board looks like this at the end of a first prompt in E_C:
+
+```text
+8 5 4 6 7 9 2 1 3
+7 9 6 1 3 4 5 4 8
+3 2 1 4 8 5 9 6 7
+1 3 5 9 4 8 7 2 6
+6 7 2 5 1 3 8 9 4
+4 8 9 2 6 7 3 5 1
+2 6 3 8 5 1 4 7 9
+5 1 8 7 9 4 6 3 2
+9 4 7 3 2 6 3 8 5
+violated: {1, 8, 14, 15, 19, 26}
+```
+
+Boards have no blank cells: every cell holds a digit, and some of them are wrong. That keeps finding
+V(s) a real computation, as in `4x4Env`, because a blank would mark the broken units on sight. This
+environment hasn't been tried with a model yet, so the prompt wording may need the same tuning.
+
+| File | Purpose |
+|---|---|
+| `constraints.py` | `Row`, `Col`, `Box` and `violations()`, the single source of truth for V(s) |
+| `instances.py` | Solved-board generation and corruption |
+| `sudoku_env.py` | `SudokuEnv` and `counterfactual_score` |
 | `tests/test_env.py` | Environment tests |
