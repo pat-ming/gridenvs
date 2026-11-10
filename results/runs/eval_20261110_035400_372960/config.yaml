@@ -1,0 +1,38 @@
+experiment:
+  name: eval
+  tags: []
+  seed: 0
+model:
+  name: Qwen/Qwen3-1.7B-Base
+  chat_template_kwargs:
+    enable_thinking: false
+env:
+  name: grid4
+  max_reply_tokens: 32
+eval:
+  instances:
+    set_name:
+    - spec
+    - rows
+    - distinct
+    - ineq
+    m:
+    - 1
+    - 2
+  slack:
+  - 0
+  - 2
+  modes:
+  - none
+  - 'true'
+  - residual
+  n_instances: 64
+  samples: 8
+  temperature: 1.0
+tracking:
+  wandb:
+    enabled: true
+    project: fbrl
+    group: baseline_sizes
+  best:
+    metric: null

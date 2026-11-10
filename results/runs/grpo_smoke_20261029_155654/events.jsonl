@@ -1,0 +1,14 @@
+{"event": "start", "time": "2026-10-29T15:57:04.791646+00:00", "resumed": false}
+{"event": "metrics", "time": "2026-10-29T15:57:14.801576+00:00", "step": null, "sys/gpu0/util": 2, "sys/gpu0/mem_util": 0, "sys/gpu0/mem_gb": 2.41, "sys/gpu0/power_w": 94.4, "sys/gpu0/temp_c": 27, "sys/gpu0/sm_mhz": 1275}
+{"event": "metrics", "time": "2026-10-29T15:57:24.803468+00:00", "step": null, "sys/gpu0/util": 0, "sys/gpu0/mem_util": 0, "sys/gpu0/mem_gb": 2.79, "sys/gpu0/power_w": 93.9, "sys/gpu0/temp_c": 27, "sys/gpu0/sm_mhz": 1275}
+{"event": "metrics", "time": "2026-10-29T15:57:34.804333+00:00", "step": null, "sys/gpu0/util": 0, "sys/gpu0/mem_util": 0, "sys/gpu0/mem_gb": 2.79, "sys/gpu0/power_w": 94.2, "sys/gpu0/temp_c": 27, "sys/gpu0/sm_mhz": 1275}
+{"event": "metrics", "time": "2026-10-29T15:57:44.805224+00:00", "step": null, "sys/gpu0/util": 0, "sys/gpu0/mem_util": 0, "sys/gpu0/mem_gb": 2.79, "sys/gpu0/power_w": 94.0, "sys/gpu0/temp_c": 27, "sys/gpu0/sm_mhz": 1275}
+{"event": "metrics", "time": "2026-10-29T15:57:54.806123+00:00", "step": null, "sys/gpu0/util": 0, "sys/gpu0/mem_util": 0, "sys/gpu0/mem_gb": 2.79, "sys/gpu0/power_w": 94.0, "sys/gpu0/temp_c": 27, "sys/gpu0/sm_mhz": 1275}
+{"event": "metrics", "time": "2026-10-29T15:58:04.807452+00:00", "step": null, "sys/gpu0/util": 0, "sys/gpu0/mem_util": 0, "sys/gpu0/mem_gb": 2.79, "sys/gpu0/power_w": 94.1, "sys/gpu0/temp_c": 27, "sys/gpu0/sm_mhz": 1275}
+{"event": "metrics", "time": "2026-10-29T15:58:15.692940+00:00", "step": null, "sys/gpu0/util": 0, "sys/gpu0/mem_util": 0, "sys/gpu0/mem_gb": 2.73, "sys/gpu0/power_w": 94.5, "sys/gpu0/temp_c": 28, "sys/gpu0/sm_mhz": 1275}
+{"event": "metrics", "time": "2026-10-29T15:58:25.693777+00:00", "step": null, "sys/gpu0/util": 0, "sys/gpu0/mem_util": 0, "sys/gpu0/mem_gb": 3.57, "sys/gpu0/power_w": 94.6, "sys/gpu0/temp_c": 28, "sys/gpu0/sm_mhz": 1275}
+{"event": "metrics", "time": "2026-10-29T15:58:35.695097+00:00", "step": null, "sys/gpu0/util": 0, "sys/gpu0/mem_util": 0, "sys/gpu0/mem_gb": 3.57, "sys/gpu0/power_w": 94.6, "sys/gpu0/temp_c": 28, "sys/gpu0/sm_mhz": 1275}
+{"event": "metrics", "time": "2026-10-29T15:58:45.695760+00:00", "step": null, "sys/gpu0/util": 0, "sys/gpu0/mem_util": 0, "sys/gpu0/mem_gb": 3.57, "sys/gpu0/power_w": 94.4, "sys/gpu0/temp_c": 28, "sys/gpu0/sm_mhz": 1275}
+{"event": "metrics", "time": "2026-10-29T15:58:55.831537+00:00", "step": null, "sys/gpu0/util": 0, "sys/gpu0/mem_util": 0, "sys/gpu0/mem_gb": 3.57, "sys/gpu0/power_w": 94.8, "sys/gpu0/temp_c": 28, "sys/gpu0/sm_mhz": 1275}
+{"event": "error", "time": "2026-10-29T15:58:58.103247+00:00", "error": "InductorError(\"AssertionError: libcuda.so cannot found!\\nPossible files are located at ['/usr/local/cuda/compat/lib/libcuda.so.1'].Please create a symlink of libcuda.so to any of the files.\")"}
+{"event": "end", "time": "2026-10-29T15:58:58.106770+00:00", "status": "failed"}

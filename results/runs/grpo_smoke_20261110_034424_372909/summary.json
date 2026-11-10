@@ -1,0 +1,16 @@
+{
+  "global_step": 10,
+  "total_flos": 0.0,
+  "num_input_tokens_seen": 353780,
+  "gpu0_util_mean": 31.3,
+  "gpu0_mem_peak_gb": 21.23,
+  "gpu0_energy_kwh": 0.0166,
+  "name": "grpo_smoke",
+  "tags": [],
+  "status": "finished",
+  "elapsed_sec": 386.8,
+  "gpu_hours": 0.1074,
+  "best_metric": null,
+  "best_value": null,
+  "best_step": null
+}

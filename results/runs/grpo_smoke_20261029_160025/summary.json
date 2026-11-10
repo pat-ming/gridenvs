@@ -1,0 +1,15 @@
+{
+  "gpu0_util_mean": 2.5,
+  "gpu0_mem_peak_gb": 26.37,
+  "gpu0_energy_kwh": 0.0026,
+  "name": "grpo_smoke",
+  "tags": [
+    "smoke"
+  ],
+  "status": "failed",
+  "elapsed_sec": 107.1,
+  "gpu_hours": 0.0297,
+  "best_metric": null,
+  "best_value": null,
+  "best_step": null
+}

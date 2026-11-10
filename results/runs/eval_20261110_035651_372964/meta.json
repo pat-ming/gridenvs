@@ -1,0 +1,30 @@
+{
+  "created": "2026-11-10T03:56:51.699759+00:00",
+  "host": "a60-2209.engr.wustl.edu",
+  "python": "3.12.16",
+  "argv": [
+    "/engrfs/project/netanel.raviv/motti_k/fbrl/code/src/fbrl/evaluate.py",
+    "--config",
+    "configs/eval.yaml",
+    "--set",
+    "tracking.wandb.group=baseline_sizes",
+    "--set",
+    "model.name=Qwen/Qwen3-4B-Base"
+  ],
+  "cwd": "/engrfs/project/netanel.raviv/motti_k/fbrl/code",
+  "git": "fda9db4-dirty",
+  "slurm": {
+    "job_id": "372964",
+    "job_partition": "general-gpu-long",
+    "job_account": "engr-lab-netanel.raviv",
+    "slurmd_nodename": "a60-2209"
+  },
+  "torch": "2.13.0+cu130",
+  "cuda": "13.0",
+  "gpus": [
+    "NVIDIA RTX A6000"
+  ],
+  "status": "running",
+  "wandb_id": "8b2uvzdh",
+  "wandb_url": "https://forge.coreweave.com/wandb/morevolution-washington-university-in-st-louis/fbrl/runs/8b2uvzdh"
+}
