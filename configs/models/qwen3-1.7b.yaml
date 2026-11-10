@@ -1,0 +1,2 @@
+model: {name: Qwen/Qwen3-1.7B-Base}
+grpo: {gradient_checkpointing: true}

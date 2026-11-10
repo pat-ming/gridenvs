@@ -8,16 +8,13 @@ next observation, so they work with any model.
 ## Setup
 
 ```bash
-pip install -r requirements.txt
-cd 4x4Env        # or SudokuEnv
-python -m pytest tests -q
+pip install -e . pytest      # just the environments and harness
+python -m pytest tests/test_grid4.py tests/test_sudoku.py -q
+# or, with the training stack: uv sync && uv run pytest -q
 ```
 
-Run scripts from inside the environment's folder, because its modules import each other by name.
-Both folders have a `constraints.py` and an `instances.py`, so use one environment per Python
-process. Otherwise Python reuses whichever of those modules it imported first.
-
-There are two environments: [`4x4Env`](#4x4env-the-task) and [`SudokuEnv`](#sudokuenv). Both offer
+The environments are the `gridenvs` package in `src/`. There are two: [`gridenvs.grid4`](#4x4env-the-task)
+and [`gridenvs.sudoku`](#sudokuenv). Both offer
 the same four modes and return observations the same way.
 
 ## 4x4Env: the task
@@ -96,8 +93,8 @@ help separate the two explanations.
 ## Using an environment in a training loop
 
 ```python
-from grid_env import GridEnv
-from instances import make_instance
+from gridenvs.grid4.grid_env import GridEnv
+from gridenvs.grid4.instances import make_instance
 
 env = GridEnv(mode="true", H=4, seed=0)
 inst = make_instance("spec", m=2, seed=123)
@@ -127,14 +124,14 @@ These came up when trying the environments on Qwen3-0.6B:
   episodes per setting tried, with the feedback line on and off. A terminal reward gives GRPO nothing
   to learn from if every episode ties.
 
-## Files in `4x4Env/`
+## Files in `src/gridenvs/grid4/`
 
 | File | Purpose |
 |---|---|
 | `constraints.py` | Constraint types and `violations()`, the single source of truth for V(s) |
 | `instances.py` | Instance generation and constraint sets |
 | `grid_env.py` | `GridEnv` and `counterfactual_score` |
-| `tests/test_env.py` | Environment tests |
+| `tests/test_grid4.py` | Environment tests |
 
 ## SudokuEnv
 
@@ -149,10 +146,10 @@ digit 1–9 exactly once.
 | 18–26 | Boxes 0–8, left to right and then top to bottom |
 
 - **Action:** one reply per turn, containing `WRITE v r c`, which writes digit `v` at row `r`, column
-  `c`. Note the order: the value comes first, unlike `EDIT r c v` in `4x4Env`. Any cell can be
+  `c`. Note the order: the value comes first, unlike `EDIT r c v` in the 4x4 grid. Any cell can be
   overwritten. If a reply has several writes, the last one counts. An invalid reply uses up the turn
   and changes nothing.
-- **Reward:** the same as `4x4Env`. `R = 1` if the whole board is valid after turn `H`, otherwise 0,
+- **Reward:** the same as the 4x4 grid. `R = 1` if the whole board is valid after turn `H`, otherwise 0,
   with no intermediate reward. Use `H >= m`, or some instances can't be solved.
 
 The four modes are the ones in [the table above](#the-environments), and you use them the same way.
@@ -160,8 +157,8 @@ There's one difference: indices can have two digits here, so a noise item repeat
 match (`□` or `□□`), which keeps the line's token length matched to E_C.
 
 ```python
-from instances import make_instance
-from sudoku_env import SudokuEnv
+from gridenvs.sudoku.instances import make_instance
+from gridenvs.sudoku.sudoku_env import SudokuEnv
 
 env = SudokuEnv(mode="true", H=4, seed=0)
 inst = make_instance(m=2, seed=123)
@@ -191,12 +188,61 @@ violated: {1, 8, 14, 15, 19, 26}
 ```
 
 Boards have no blank cells: every cell holds a digit, and some of them are wrong. That keeps finding
-V(s) a real computation, as in `4x4Env`, because a blank would mark the broken units on sight. This
+V(s) a real computation, as in the 4x4 grid, because a blank would mark the broken units on sight. This
 environment hasn't been tried with a model yet, so the prompt wording may need the same tuning.
+
+Files are in `src/gridenvs/sudoku/`.
 
 | File | Purpose |
 |---|---|
 | `constraints.py` | `Row`, `Col`, `Box` and `violations()`, the single source of truth for V(s) |
 | `instances.py` | Solved-board generation and corruption |
 | `sudoku_env.py` | `SudokuEnv` and `counterfactual_score` |
-| `tests/test_env.py` | Environment tests |
+| `tests/test_sudoku.py` | Environment tests |
+
+## Training and evaluation
+
+The training side is a uv project in `src/`:
+
+```text
+src/gridenvs/   the environments above
+src/fbrl/       model <-> env play loop, eval, SFT warm start, GRPO
+src/harness/    experiment tracking, sweeps, comparisons (see src/harness/README.md)
+configs/        base configs, plus configs/models/ presets per model size
+cluster/        scripts for shell.engr.wustl.edu
+results/runs/   small files from every cluster run (config, meta, metrics, eval cells), via `cluster/remote.sh pull`
+```
+
+`fbrl.grid` plays an environment in plain text: the observation goes in as a user message, the model's
+reply goes to `env.step`, for exactly `H` turns. An episode is one token sequence with a mask over the
+model's reply tokens, so eval, SFT, GRPO and probing all see the same tokens. Evaluation instances use
+seeds from `EVAL_SEED_START` up; SFT and GRPO seeds stay below it.
+
+`fbrl.grid` also adds a `residual` mode to `GridEnv`: E_C's line plus how far each violated sum is from
+its target (`violated: {0 (+3), 4}`). With `none`, `true` and `residual` the feedback offloads nothing,
+the search for the broken constraint, or that plus the arithmetic.
+
+| Module | What it does |
+|---|---|
+| `fbrl.evaluate` | success, `mixed` (share of instances whose samples disagree, i.e. GRPO signal), parse rate, on-target edits and counterfactual score, per (instance params, H, mode) |
+| `fbrl.train_sft` | warm start on scripted episodes, modes spread evenly; `demos.oracle` sets the share of solved demos |
+| `fbrl.train_grpo` | GRPO through TRL's `rollout_func`; `env.mode` can be a schedule like `[[0, "true"], [200, none]]`; runs `fbrl.evaluate` every `eval.every` steps |
+
+```sh
+uv sync
+uv run pytest -q tests
+
+cluster/remote.sh sync
+cluster/remote.sh submit -- fbrl.evaluate --config configs/eval.yaml --set model.name=Qwen/Qwen3-1.7B
+cluster/remote.sh submit -- fbrl.train_sft --config configs/sft.yaml --config configs/models/qwen3-1.7b.yaml \
+    --set experiment.export='$FBRL/models/sft-qwen3-1.7b'
+cluster/remote.sh sweep --gres=gpu:a40:1 -- fbrl.train_grpo --config configs/grpo.yaml \
+    --grid env.mode=none,true,noise,residual --grid experiment.seed=0,1,2,3,4
+cluster/remote.sh harness compare --where tracking.wandb.group=<sweep> --group-by env.mode \
+    --metrics eval/spec_m1_H1_none/success,eval/spec_m1_H1_counterfactual/cf_score
+```
+
+Every run logs to W&B (project `fbrl`), and a sweep's runs share a W&B group named after the sweep. vLLM
+is Linux only, so anything that generates runs on the cluster. Jobs default to one A100-SXM4 on
+`general-gpu-long`; pass `--gres=gpu:a40:1` or `gpu:a6000:1` (48 GB) for anything that fits there.
+`cluster/remote.sh` with no arguments lists its commands.

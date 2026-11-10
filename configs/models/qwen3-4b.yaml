@@ -1,0 +1,5 @@
+# Full fine-tuning with Adam doesn't fit next to colocated vLLM on 80 GB.
+model:
+  name: Qwen/Qwen3-4B-Base
+  lora: {r: 64, lora_alpha: 128, target_modules: all-linear, task_type: CAUSAL_LM}
+grpo: {learning_rate: 1.0e-5, gradient_checkpointing: true}

@@ -1,0 +1,9 @@
+model:
+  name: Qwen/Qwen3-8B-Base
+  lora: {r: 64, lora_alpha: 128, target_modules: all-linear, task_type: CAUSAL_LM}
+grpo:
+  learning_rate: 1.0e-5
+  gradient_checkpointing: true
+  per_device_train_batch_size: 16
+  gradient_accumulation_steps: 8
+  vllm_gpu_memory_utilization: 0.35
