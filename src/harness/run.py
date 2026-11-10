@@ -18,6 +18,7 @@ method is a no-op, so the same code runs under torchrun/accelerate.
 import json
 import os
 import platform
+import re
 import shutil
 import signal
 import subprocess
@@ -64,7 +65,7 @@ class Run:
         exp = cfg.get("experiment", {})
         track = cfg.get("tracking", {})
         self.cfg = cfg
-        self.name = exp.get("name", "unnamed")
+        self.name = expand_name(exp.get("name", "unnamed"), cfg)
         self.tags = list(exp.get("tags", []))
         self.step_key = step_key
         self.summary: dict = {}
@@ -324,6 +325,30 @@ def event(kind: str, **data) -> None:
 def finish(summary: dict | None = None, status: str = "finished") -> None:
     if _current:
         _current.finish(summary, status)
+
+
+def expand_name(template: str, cfg: dict) -> str:
+    """Fill {dotted.key} from the config: "eval_{model.name}" -> "eval_Qwen3-8B".
+    Paths shrink to their last meaningful part, lists join with "-"."""
+
+    def value(match: re.Match) -> str:
+        v = cfg
+        for k in match.group(1).split("."):
+            v = v.get(k) if isinstance(v, dict) else None
+        if isinstance(v, list):
+            return "-".join(str(x) for x in _flatten(v))
+        parts = [p for p in str(v).split("/") if p]
+        while len(parts) > 1 and (
+            parts[-1] in ("final", "checkpoints") or parts[-1].startswith("checkpoint-")
+        ):
+            parts.pop()
+        return parts[-1] if parts else str(v)
+
+    return re.sub(r"\{([\w.]+)\}", value, template)
+
+
+def _flatten(xs: list) -> list:
+    return [y for x in xs for y in (_flatten(x) if isinstance(x, list) else [x])]
 
 
 def provenance() -> dict:

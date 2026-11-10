@@ -41,6 +41,7 @@ All keys are optional.
 
 ```yaml
 experiment: {name, tags, output_dir}        # output_dir defaults to $HARNESS_RUNS_DIR, else runs/
+                                            # name can use config values: "eval_{model.name}"
 tracking:
   wandb: {enabled, project, entity, group, mode}
   best: {metric: eval/acc, mode: max}       # save_checkpoint also writes best.pt on improvement

@@ -14,7 +14,6 @@ def test_residual_line_reports_how_far_each_sum_is_off():
     assert env.mode == "true"  # everything else behaves as E_C
 
 
-
 def test_oracle_demos_solve_and_only_replies_are_trained():
     transformers = pytest.importorskip("transformers")
     try:

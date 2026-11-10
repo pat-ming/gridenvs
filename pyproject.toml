@@ -36,3 +36,5 @@ environments = [
 
 [tool.ruff]
 line-length = 88
+# Patrick's env code keeps its own style.
+extend-exclude = ["src/gridenvs", "tests/test_grid4.py", "tests/test_sudoku.py"]

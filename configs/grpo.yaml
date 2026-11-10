@@ -1,5 +1,5 @@
 experiment:
-  name: grpo
+  name: "grpo_{model.name}_{env.mode}_s{experiment.seed}"
   tags: []
   seed: 0
 

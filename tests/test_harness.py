@@ -13,7 +13,7 @@ from harness.cli import app
 def cfg_for(tmp_path, condition="A"):
     return {
         "experiment": {
-            "name": f"t{condition}",
+            "name": "t{env.condition}",
             "tags": ["x"],
             "output_dir": str(tmp_path),
         },

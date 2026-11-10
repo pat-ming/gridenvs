@@ -1,5 +1,5 @@
 experiment:
-  name: sft
+  name: "sft_{model.name}_oracle{demos.oracle}"
   tags: []
   seed: 0
   export: null  # also copy the final checkpoint here, e.g. $FBRL/models/sft-qwen3-0.6b
