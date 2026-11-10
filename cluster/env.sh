@@ -19,7 +19,7 @@ export XDG_CACHE_HOME=$ROOT/xdg_cache
 export WANDB_DIR=$FBRL/wandb
 export WANDB_CACHE_DIR=$ROOT/xdg_cache/wandb
 export WANDB_DATA_DIR=$ROOT/xdg_cache/wandb-data
-export WANDB_ENTITY=${WANDB_ENTITY:-}
+export WANDB_ENTITY=${WANDB_ENTITY:-cse-5100-fall-2026}
 export WANDB_PROJECT=${WANDB_PROJECT:-fbrl}
 
 # JIT/compile caches race on BeeGFS when several workers write at once

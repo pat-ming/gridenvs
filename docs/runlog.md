@@ -6,7 +6,7 @@ in `results/runs/`, and everything is also in W&B (project `fbrl`).
 ## 2026-11-09 · GRPO smoke on `spec`
 
 Qwen3-0.6B (instruct), 10 steps of 128 episodes, `spec` with m ∈ {1, 2}, E_C, eval every 5 steps.
-About 25 s per step on an A6000. [W&B](https://forge.coreweave.com/wandb/morevolution-washington-university-in-st-louis/fbrl/runs/mu6ujhjk),
+About 25 s per step on an A6000. [W&B](https://forge.coreweave.com/wandb/cse-5100-fall-2026/fbrl/runs/mu6ujhjk),
 `grpo_smoke_20261110_034424_372909`.
 
 The pipeline works end to end: rollouts, env-masked loss, periodic eval, checkpoint. But 94–100% of
@@ -61,6 +61,6 @@ the reason for adding `residual`.
 ## 2026-10-29 · Toy GRPO smoke (tool-calling)
 
 The first plumbing check, on a placeholder env through TRL's tool-calling interface. 20 steps,
-[W&B](https://forge.coreweave.com/wandb/morevolution-washington-university-in-st-louis/fbrl/runs/rbc3oto1).
+[W&B](https://forge.coreweave.com/wandb/cse-5100-fall-2026/fbrl/runs/rbc3oto1).
 It's superseded by the plain-text `rollout_func` path, since the env feeds observations back
 automatically rather than through tool calls.
