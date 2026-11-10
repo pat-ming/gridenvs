@@ -1,6 +1,7 @@
 experiment:
   name: "eval_{model.name}"
-  tags: []
+  tags: ["eval", "{model.name}"]
+  notes: "Held-out eval of {model.name}: success, parse rate and GRPO signal per constraint set, H and feedback mode."
   seed: 0
 
 model:

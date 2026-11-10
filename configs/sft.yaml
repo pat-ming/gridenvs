@@ -1,6 +1,7 @@
 experiment:
   name: "sft_{model.name}_oracle{demos.oracle}"
-  tags: []
+  tags: ["sft", "{model.name}"]
+  notes: "SFT warm start for {model.name} on scripted demos ({demos.oracle} solved by the oracle), so GRPO starts from a model that follows the format."
   seed: 0
   export: null  # also copy the final checkpoint here, e.g. $FBRL/models/sft-qwen3-0.6b
 

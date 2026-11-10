@@ -66,7 +66,8 @@ class Run:
         track = cfg.get("tracking", {})
         self.cfg = cfg
         self.name = expand_name(exp.get("name", "unnamed"), cfg)
-        self.tags = list(exp.get("tags", []))
+        self.tags = [expand_name(t, cfg) for t in exp.get("tags", [])]
+        self.notes = expand_name(exp.get("notes") or "", cfg)
         self.step_key = step_key
         self.summary: dict = {}
         self.active = int(os.environ.get("RANK", "0")) == 0
@@ -275,6 +276,7 @@ class Run:
                 mode=cfg.get("mode"),
                 name=self.dir.name,
                 tags=self.tags,
+                notes=self.notes or None,
                 config=self.cfg,
                 dir=self.dir,
                 id=resume_id,

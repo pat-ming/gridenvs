@@ -57,7 +57,7 @@ submit)
 	opts=()
 	while [[ $# -gt 0 && "$1" != "--" ]]; do opts+=("$1"); shift; done
 	shift || { echo "usage: submit [sbatch opts] -- <module> [args...]" >&2; exit 1; }
-	ssh "${SSH_OPTS[@]}" "$HOST" bash -s -- "${opts[@]}" -- "$@" <<REMOTE
+	ssh "${SSH_OPTS[@]}" "$HOST" "bash -s -- $(printf '%q ' "${opts[@]}" -- "$@")" <<REMOTE
 $ENV
 opts=(); while [[ \$1 != "--" ]]; do opts+=("\$1"); shift; done; shift
 sbatch --parsable --job-name="\$1" --output="$FBRL/logs/%x-%j.out" "\${opts[@]}" $FBRL/code/cluster/job.sbatch "\$@"
@@ -78,7 +78,7 @@ sweep)
 	file="$FBRL/sweeps/$name.txt"
 	remote "mkdir -p $FBRL/sweeps && cat > $file" <<<"$lines"
 	echo "$name: $n runs ($file)"
-	ssh "${SSH_OPTS[@]}" "$HOST" bash -s -- "${opts[@]}" -- "$module" "${fixed[@]}" --set "tracking.wandb.group=$name" <<REMOTE
+	ssh "${SSH_OPTS[@]}" "$HOST" "bash -s -- $(printf '%q ' "${opts[@]}" -- "$module" "${fixed[@]}" --set "tracking.wandb.group=$name")" <<REMOTE
 $ENV
 opts=(); while [[ \$1 != "--" ]]; do opts+=("\$1"); shift; done; shift
 sbatch --parsable --array=0-$((n - 1)) --job-name="$name" --output="$FBRL/logs/%x-%A_%a.out" \\

@@ -40,8 +40,8 @@ Status is `running`, then `finished`, `failed` (exception), or `interrupted` (Ct
 All keys are optional.
 
 ```yaml
-experiment: {name, tags, output_dir}        # output_dir defaults to $HARNESS_RUNS_DIR, else runs/
-                                            # name can use config values: "eval_{model.name}"
+experiment: {name, tags, notes, output_dir} # output_dir defaults to $HARNESS_RUNS_DIR, else runs/
+                                            # name, tags and notes can use config values: "eval_{model.name}"
 tracking:
   wandb: {enabled, project, entity, group, mode}
   best: {metric: eval/acc, mode: max}       # save_checkpoint also writes best.pt on improvement

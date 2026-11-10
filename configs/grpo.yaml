@@ -1,6 +1,7 @@
 experiment:
   name: "grpo_{model.name}_{env.mode}_s{experiment.seed}"
-  tags: []
+  tags: ["grpo", "{model.name}", "mode-{env.mode}", "{env.instances.set_name}"]
+  notes: "GRPO on {model.name} with feedback mode {env.mode}, seed {experiment.seed}."
   seed: 0
 
 model:

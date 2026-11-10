@@ -16,6 +16,11 @@ constraint, or that plus the arithmetic.
 | `fbrl.train_grpo` | GRPO through TRL's `rollout_func`; `env.mode` can be a schedule like `[[0, "true"], [200, none]]`; runs `fbrl.evaluate` every `eval.every` steps |
 
 Configs are layered: a base config, then optionally a preset from `configs/models/`, then `--set`.
+Run names, tags and W&B notes come from `experiment.{name,tags,notes}` and can use config values
+(`eval_{model.name}`). Say why a run exists with `--set experiment.notes="..."`.
+
+`python -m fbrl.workspace` (on the cluster) saves the W&B "Overview" view: GRPO learning signal first,
+then held-out eval over training, checkpoint evals as bars, then optimization and system panels.
 
 ```sh
 cluster/remote.sh submit -- fbrl.evaluate --config configs/eval.yaml --set model.name=Qwen/Qwen3-1.7B
