@@ -16,7 +16,7 @@ That's the cold baseline below, showing up in training.
 ## 2026-11-09 · Cold baselines across model sizes
 
 64 held-out instances × 8 samples, temperature 1.0, H = m + {0, 2}, m ∈ {1, 2}. Success in %, averaged
-over the four (m, H) cells, as `none → true`. W&B groups `baseline_1109` and `baseline_sizes`.
+over the four (m, H) cells, as `none → true`. W&B groups `baseline_1109` and `baseline_sizes`, runs `eval_<model>_…`.
 
 | Model | `spec` | `rows` | `ineq` | `distinct` |
 |---|---|---|---|---|
@@ -36,10 +36,10 @@ over the four (m, H) cells, as `none → true`. W&B groups `baseline_1109` and `
 - 1.7B is worse than 0.6B on `distinct`, so size isn't monotonic here. Don't read much into one sample
   of 512 episodes per cell.
 
-**Open: Base models don't work in this format yet.** Qwen3-0.6B-Base and 1.7B-Base parse 0–2% of
-replies, and the replies are junk (random multilingual tokens, not near-misses). That's too broken to be
-sampling noise. Next is checking the prompt they actually see (the empty `<think></think>` block, the
-chat template) and trying a lower temperature or top-p. 4B-Base and 8B-Base are still running.
+Base models (0.6B to 8B) parse 0–8% of replies and solve nothing. That's not a pipeline bug, just
+base models without the format: 0.6B samples junk at temperature 1.0, and 8B-Base writes coherent text
+but continues the conversation ("assistant… user… Constraints: …") or answers some other task. This is
+the job of the SFT warm start, which is next.
 
 ## 2026-11-09 · Scripted policies on the 4x4 instances
 

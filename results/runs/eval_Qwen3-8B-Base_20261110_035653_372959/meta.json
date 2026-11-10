@@ -24,7 +24,10 @@
   "gpus": [
     "NVIDIA RTX A6000"
   ],
-  "status": "running",
+  "status": "finished",
   "wandb_id": "n979g4zg",
-  "wandb_url": "https://forge.coreweave.com/wandb/morevolution-washington-university-in-st-louis/fbrl/runs/n979g4zg"
+  "wandb_url": "https://forge.coreweave.com/wandb/morevolution-washington-university-in-st-louis/fbrl/runs/n979g4zg",
+  "gpu_hours": 0.536292591145288,
+  "best_value": null,
+  "best_step": null
 }
