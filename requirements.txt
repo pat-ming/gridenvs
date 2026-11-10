@@ -1,3 +1,0 @@
-numpy
-pytest
-transformers  # optional: only for the noise-line token test

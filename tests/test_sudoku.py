@@ -2,9 +2,14 @@
 import numpy as np
 import pytest
 
-from constraints import Box, Col, Row, all_constraints, violations
-from instances import make_instance
-from sudoku_env import NOISE_ITEM, SudokuEnv, counterfactual_score, format_feedback
+from gridenvs.sudoku.constraints import Box, Col, Row, all_constraints, violations
+from gridenvs.sudoku.instances import make_instance
+from gridenvs.sudoku.sudoku_env import (
+    NOISE_ITEM,
+    SudokuEnv,
+    counterfactual_score,
+    format_feedback,
+)
 
 MODES = ["none", "true", "noise", "counterfactual"]
 

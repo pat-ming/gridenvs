@@ -1,6 +1,7 @@
 """Instance generation: plant a solved board, then corrupt it with m random writes."""
 import numpy as np
-from constraints import BOX, N, all_constraints, violations
+
+from .constraints import BOX, N, all_constraints, violations
 
 VMIN, VMAX = 1, 9  # allowed cell values (inclusive)
 

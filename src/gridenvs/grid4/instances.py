@@ -1,6 +1,14 @@
 """Instance generation: plant a solution, then corrupt it with m random edits."""
 import numpy as np
-from constraints import AllDistinctCol, FlatDescending, PairwiseLess, all_col_sums, all_row_sums, violations
+
+from .constraints import (
+    AllDistinctCol,
+    FlatDescending,
+    PairwiseLess,
+    all_col_sums,
+    all_row_sums,
+    violations,
+)
 
 VMIN, VMAX = 0, 9  # allowed cell values (inclusive)
 

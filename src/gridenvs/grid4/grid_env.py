@@ -14,10 +14,11 @@ Usage:
         if done: break
 """
 import re
+
 import numpy as np
 
-from constraints import render_constraints, violations
-from instances import VMAX, VMIN
+from .constraints import render_constraints, violations
+from .instances import VMAX, VMIN
 
 MODES = ("none", "true", "noise", "counterfactual")
 # Under the Qwen3 tokenizer "□" takes as many tokens as a single digit in this line, while

@@ -8,6 +8,7 @@ Every constraint type provides:
 violations(g, constraints) is the single source of truth for V(s).
 """
 from dataclasses import dataclass
+
 import numpy as np
 
 N = 9

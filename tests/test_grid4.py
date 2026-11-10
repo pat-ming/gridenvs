@@ -2,9 +2,14 @@
 import numpy as np
 import pytest
 
-from constraints import AllDistinctCol, PairwiseLess, violations
-from grid_env import NOISE_ITEM, GridEnv, counterfactual_score, format_feedback
-from instances import CONSTRAINT_SETS, make_instance
+from gridenvs.grid4.constraints import AllDistinctCol, PairwiseLess, violations
+from gridenvs.grid4.grid_env import (
+    NOISE_ITEM,
+    GridEnv,
+    counterfactual_score,
+    format_feedback,
+)
+from gridenvs.grid4.instances import CONSTRAINT_SETS, make_instance
 
 SETS = list(CONSTRAINT_SETS)
 
