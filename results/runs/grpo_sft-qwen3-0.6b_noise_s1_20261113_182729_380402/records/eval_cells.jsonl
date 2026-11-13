@@ -1,0 +1,156 @@
+{"step": 0, "set_name": "distinct", "m": 1, "H": 1, "mode": "none", "success": 0.0859375, "any_success": 0.28125, "mixed": 0.28125, "parse": 1.0, "on_target": 0.25}
+{"step": 0, "set_name": "distinct", "m": 1, "H": 1, "mode": "true", "success": 0.0859375, "any_success": 0.34375, "mixed": 0.34375, "parse": 1.0, "on_target": 0.2578125}
+{"step": 0, "set_name": "distinct", "m": 1, "H": 1, "mode": "counterfactual", "success": 0.0390625, "any_success": 0.15625, "mixed": 0.15625, "parse": 0.9921875, "on_target": 0.16535433070866143, "cf_score": 0.16535433070866143}
+{"step": 0, "set_name": "distinct", "m": 2, "H": 2, "mode": "none", "success": 0.1171875, "any_success": 0.34375, "mixed": 0.34375, "parse": 1.0, "on_target": 0.38271604938271603}
+{"step": 0, "set_name": "distinct", "m": 2, "H": 2, "mode": "true", "success": 0.109375, "any_success": 0.375, "mixed": 0.375, "parse": 0.99609375, "on_target": 0.3185483870967742}
+{"step": 0, "set_name": "distinct", "m": 2, "H": 2, "mode": "counterfactual", "success": 0.1171875, "any_success": 0.40625, "mixed": 0.40625, "parse": 1.0, "on_target": 0.33739837398373984, "cf_score": -0.013671875}
+{"step": 0, "set_name": "ineq", "m": 1, "H": 1, "mode": "none", "success": 0.0, "any_success": 0.0, "mixed": 0.0, "parse": 0.9921875, "on_target": 0.07874015748031496}
+{"step": 0, "set_name": "ineq", "m": 1, "H": 1, "mode": "true", "success": 0.0390625, "any_success": 0.15625, "mixed": 0.15625, "parse": 0.984375, "on_target": 0.10317460317460317}
+{"step": 0, "set_name": "ineq", "m": 1, "H": 1, "mode": "counterfactual", "success": 0.046875, "any_success": 0.1875, "mixed": 0.1875, "parse": 0.9921875, "on_target": 0.13385826771653545, "cf_score": 0.015748031496062992}
+{"step": 0, "set_name": "ineq", "m": 2, "H": 2, "mode": "none", "success": 0.03125, "any_success": 0.09375, "mixed": 0.09375, "parse": 1.0, "on_target": 0.15873015873015872}
+{"step": 0, "set_name": "ineq", "m": 2, "H": 2, "mode": "true", "success": 0.078125, "any_success": 0.28125, "mixed": 0.28125, "parse": 1.0, "on_target": 0.15139442231075698}
+{"step": 0, "set_name": "ineq", "m": 2, "H": 2, "mode": "counterfactual", "success": 0.0234375, "any_success": 0.09375, "mixed": 0.09375, "parse": 0.99609375, "on_target": 0.17716535433070865, "cf_score": 0.03076171875}
+{"step": 25, "set_name": "distinct", "m": 1, "H": 1, "mode": "none", "success": 0.125, "any_success": 0.5, "mixed": 0.5, "parse": 1.0, "on_target": 0.2421875}
+{"step": 25, "set_name": "distinct", "m": 1, "H": 1, "mode": "true", "success": 0.0625, "any_success": 0.21875, "mixed": 0.21875, "parse": 1.0, "on_target": 0.25}
+{"step": 25, "set_name": "distinct", "m": 1, "H": 1, "mode": "counterfactual", "success": 0.125, "any_success": 0.40625, "mixed": 0.40625, "parse": 1.0, "on_target": 0.2421875, "cf_score": -0.03125}
+{"step": 25, "set_name": "distinct", "m": 2, "H": 2, "mode": "none", "success": 0.0625, "any_success": 0.25, "mixed": 0.25, "parse": 1.0, "on_target": 0.29880478087649404}
+{"step": 25, "set_name": "distinct", "m": 2, "H": 2, "mode": "true", "success": 0.1015625, "any_success": 0.375, "mixed": 0.375, "parse": 1.0, "on_target": 0.340080971659919}
+{"step": 25, "set_name": "distinct", "m": 2, "H": 2, "mode": "counterfactual", "success": 0.109375, "any_success": 0.375, "mixed": 0.375, "parse": 0.99609375, "on_target": 0.33739837398373984, "cf_score": -0.0166015625}
+{"step": 25, "set_name": "ineq", "m": 1, "H": 1, "mode": "none", "success": 0.0234375, "any_success": 0.09375, "mixed": 0.09375, "parse": 1.0, "on_target": 0.1328125}
+{"step": 25, "set_name": "ineq", "m": 1, "H": 1, "mode": "true", "success": 0.0390625, "any_success": 0.125, "mixed": 0.125, "parse": 0.9921875, "on_target": 0.1889763779527559}
+{"step": 25, "set_name": "ineq", "m": 1, "H": 1, "mode": "counterfactual", "success": 0.015625, "any_success": 0.0625, "mixed": 0.0625, "parse": 1.0, "on_target": 0.1328125, "cf_score": 0.015625}
+{"step": 25, "set_name": "ineq", "m": 2, "H": 2, "mode": "none", "success": 0.0390625, "any_success": 0.125, "mixed": 0.125, "parse": 0.99609375, "on_target": 0.15139442231075698}
+{"step": 25, "set_name": "ineq", "m": 2, "H": 2, "mode": "true", "success": 0.03125, "any_success": 0.125, "mixed": 0.125, "parse": 0.99609375, "on_target": 0.16141732283464566}
+{"step": 25, "set_name": "ineq", "m": 2, "H": 2, "mode": "counterfactual", "success": 0.0234375, "any_success": 0.09375, "mixed": 0.09375, "parse": 0.99609375, "on_target": 0.188, "cf_score": -0.01416015625}
+{"step": 50, "set_name": "distinct", "m": 1, "H": 1, "mode": "none", "success": 0.09375, "any_success": 0.34375, "mixed": 0.34375, "parse": 1.0, "on_target": 0.265625}
+{"step": 50, "set_name": "distinct", "m": 1, "H": 1, "mode": "true", "success": 0.0234375, "any_success": 0.09375, "mixed": 0.09375, "parse": 0.9921875, "on_target": 0.2440944881889764}
+{"step": 50, "set_name": "distinct", "m": 1, "H": 1, "mode": "counterfactual", "success": 0.0390625, "any_success": 0.15625, "mixed": 0.15625, "parse": 1.0, "on_target": 0.15625, "cf_score": 0.1875}
+{"step": 50, "set_name": "distinct", "m": 2, "H": 2, "mode": "none", "success": 0.09375, "any_success": 0.28125, "mixed": 0.28125, "parse": 1.0, "on_target": 0.2612244897959184}
+{"step": 50, "set_name": "distinct", "m": 2, "H": 2, "mode": "true", "success": 0.0625, "any_success": 0.21875, "mixed": 0.21875, "parse": 0.98828125, "on_target": 0.33877551020408164}
+{"step": 50, "set_name": "distinct", "m": 2, "H": 2, "mode": "counterfactual", "success": 0.125, "any_success": 0.40625, "mixed": 0.40625, "parse": 0.99609375, "on_target": 0.29959514170040485, "cf_score": 0.01171875}
+{"step": 50, "set_name": "ineq", "m": 1, "H": 1, "mode": "none", "success": 0.0390625, "any_success": 0.15625, "mixed": 0.15625, "parse": 1.0, "on_target": 0.1328125}
+{"step": 50, "set_name": "ineq", "m": 1, "H": 1, "mode": "true", "success": 0.046875, "any_success": 0.125, "mixed": 0.125, "parse": 0.9921875, "on_target": 0.14960629921259844}
+{"step": 50, "set_name": "ineq", "m": 1, "H": 1, "mode": "counterfactual", "success": 0.0234375, "any_success": 0.09375, "mixed": 0.09375, "parse": 1.0, "on_target": 0.171875, "cf_score": -0.015625}
+{"step": 50, "set_name": "ineq", "m": 2, "H": 2, "mode": "none", "success": 0.03125, "any_success": 0.125, "mixed": 0.125, "parse": 1.0, "on_target": 0.14741035856573706}
+{"step": 50, "set_name": "ineq", "m": 2, "H": 2, "mode": "true", "success": 0.046875, "any_success": 0.1875, "mixed": 0.1875, "parse": 1.0, "on_target": 0.1646586345381526}
+{"step": 50, "set_name": "ineq", "m": 2, "H": 2, "mode": "counterfactual", "success": 0.078125, "any_success": 0.28125, "mixed": 0.28125, "parse": 0.9921875, "on_target": 0.2248995983935743, "cf_score": -0.03759765625}
+{"step": 75, "set_name": "distinct", "m": 1, "H": 1, "mode": "none", "success": 0.09375, "any_success": 0.3125, "mixed": 0.3125, "parse": 1.0, "on_target": 0.2265625}
+{"step": 75, "set_name": "distinct", "m": 1, "H": 1, "mode": "true", "success": 0.078125, "any_success": 0.3125, "mixed": 0.3125, "parse": 1.0, "on_target": 0.2421875}
+{"step": 75, "set_name": "distinct", "m": 1, "H": 1, "mode": "counterfactual", "success": 0.0859375, "any_success": 0.3125, "mixed": 0.3125, "parse": 0.9921875, "on_target": 0.2283464566929134, "cf_score": 0.031496062992125984}
+{"step": 75, "set_name": "distinct", "m": 2, "H": 2, "mode": "none", "success": 0.1171875, "any_success": 0.40625, "mixed": 0.40625, "parse": 1.0, "on_target": 0.3413654618473896}
+{"step": 75, "set_name": "distinct", "m": 2, "H": 2, "mode": "true", "success": 0.140625, "any_success": 0.46875, "mixed": 0.46875, "parse": 1.0, "on_target": 0.3786008230452675}
+{"step": 75, "set_name": "distinct", "m": 2, "H": 2, "mode": "counterfactual", "success": 0.09375, "any_success": 0.34375, "mixed": 0.34375, "parse": 0.9921875, "on_target": 0.3467741935483871, "cf_score": -0.048828125}
+{"step": 75, "set_name": "ineq", "m": 1, "H": 1, "mode": "none", "success": 0.0390625, "any_success": 0.09375, "mixed": 0.09375, "parse": 1.0, "on_target": 0.125}
+{"step": 75, "set_name": "ineq", "m": 1, "H": 1, "mode": "true", "success": 0.03125, "any_success": 0.125, "mixed": 0.125, "parse": 1.0, "on_target": 0.109375}
+{"step": 75, "set_name": "ineq", "m": 1, "H": 1, "mode": "counterfactual", "success": 0.0234375, "any_success": 0.09375, "mixed": 0.09375, "parse": 1.0, "on_target": 0.15625, "cf_score": 0.0234375}
+{"step": 75, "set_name": "ineq", "m": 2, "H": 2, "mode": "none", "success": 0.0234375, "any_success": 0.09375, "mixed": 0.09375, "parse": 1.0, "on_target": 0.14453125}
+{"step": 75, "set_name": "ineq", "m": 2, "H": 2, "mode": "true", "success": 0.0390625, "any_success": 0.15625, "mixed": 0.15625, "parse": 0.98828125, "on_target": 0.1553784860557769}
+{"step": 75, "set_name": "ineq", "m": 2, "H": 2, "mode": "counterfactual", "success": 0.0546875, "any_success": 0.1875, "mixed": 0.1875, "parse": 0.99609375, "on_target": 0.18725099601593626, "cf_score": -0.033203125}
+{"step": 100, "set_name": "distinct", "m": 1, "H": 1, "mode": "none", "success": 0.1015625, "any_success": 0.34375, "mixed": 0.34375, "parse": 1.0, "on_target": 0.2578125}
+{"step": 100, "set_name": "distinct", "m": 1, "H": 1, "mode": "true", "success": 0.0859375, "any_success": 0.3125, "mixed": 0.3125, "parse": 1.0, "on_target": 0.296875}
+{"step": 100, "set_name": "distinct", "m": 1, "H": 1, "mode": "counterfactual", "success": 0.0390625, "any_success": 0.15625, "mixed": 0.15625, "parse": 1.0, "on_target": 0.1953125, "cf_score": 0.0546875}
+{"step": 100, "set_name": "distinct", "m": 2, "H": 2, "mode": "none", "success": 0.0703125, "any_success": 0.28125, "mixed": 0.28125, "parse": 0.9921875, "on_target": 0.31983805668016196}
+{"step": 100, "set_name": "distinct", "m": 2, "H": 2, "mode": "true", "success": 0.109375, "any_success": 0.375, "mixed": 0.375, "parse": 0.98828125, "on_target": 0.326271186440678}
+{"step": 100, "set_name": "distinct", "m": 2, "H": 2, "mode": "counterfactual", "success": 0.0703125, "any_success": 0.25, "mixed": 0.25, "parse": 0.99609375, "on_target": 0.3319838056680162, "cf_score": -0.01171875}
+{"step": 100, "set_name": "ineq", "m": 1, "H": 1, "mode": "none", "success": 0.0234375, "any_success": 0.09375, "mixed": 0.09375, "parse": 1.0, "on_target": 0.1640625}
+{"step": 100, "set_name": "ineq", "m": 1, "H": 1, "mode": "true", "success": 0.0390625, "any_success": 0.15625, "mixed": 0.15625, "parse": 1.0, "on_target": 0.140625}
+{"step": 100, "set_name": "ineq", "m": 1, "H": 1, "mode": "counterfactual", "success": 0.03125, "any_success": 0.09375, "mixed": 0.09375, "parse": 1.0, "on_target": 0.15625, "cf_score": 0.015625}
+{"step": 100, "set_name": "ineq", "m": 2, "H": 2, "mode": "none", "success": 0.0546875, "any_success": 0.15625, "mixed": 0.15625, "parse": 0.98828125, "on_target": 0.15261044176706828}
+{"step": 100, "set_name": "ineq", "m": 2, "H": 2, "mode": "true", "success": 0.0078125, "any_success": 0.03125, "mixed": 0.03125, "parse": 1.0, "on_target": 0.1141732283464567}
+{"step": 100, "set_name": "ineq", "m": 2, "H": 2, "mode": "counterfactual", "success": 0.03125, "any_success": 0.125, "mixed": 0.125, "parse": 0.9921875, "on_target": 0.1732283464566929, "cf_score": 0.0234375}
+{"step": 125, "set_name": "distinct", "m": 1, "H": 1, "mode": "none", "success": 0.109375, "any_success": 0.3125, "mixed": 0.3125, "parse": 1.0, "on_target": 0.28125}
+{"step": 125, "set_name": "distinct", "m": 1, "H": 1, "mode": "true", "success": 0.078125, "any_success": 0.28125, "mixed": 0.28125, "parse": 1.0, "on_target": 0.2421875}
+{"step": 125, "set_name": "distinct", "m": 1, "H": 1, "mode": "counterfactual", "success": 0.09375, "any_success": 0.375, "mixed": 0.375, "parse": 1.0, "on_target": 0.265625, "cf_score": -0.015625}
+{"step": 125, "set_name": "distinct", "m": 2, "H": 2, "mode": "none", "success": 0.078125, "any_success": 0.25, "mixed": 0.25, "parse": 0.98828125, "on_target": 0.2962962962962963}
+{"step": 125, "set_name": "distinct", "m": 2, "H": 2, "mode": "true", "success": 0.109375, "any_success": 0.3125, "mixed": 0.3125, "parse": 0.99609375, "on_target": 0.35365853658536583}
+{"step": 125, "set_name": "distinct", "m": 2, "H": 2, "mode": "counterfactual", "success": 0.1015625, "any_success": 0.34375, "mixed": 0.34375, "parse": 1.0, "on_target": 0.31451612903225806, "cf_score": 0.00390625}
+{"step": 125, "set_name": "ineq", "m": 1, "H": 1, "mode": "none", "success": 0.015625, "any_success": 0.0625, "mixed": 0.0625, "parse": 1.0, "on_target": 0.15625}
+{"step": 125, "set_name": "ineq", "m": 1, "H": 1, "mode": "true", "success": 0.0234375, "any_success": 0.09375, "mixed": 0.09375, "parse": 1.0, "on_target": 0.1484375}
+{"step": 125, "set_name": "ineq", "m": 1, "H": 1, "mode": "counterfactual", "success": 0.0234375, "any_success": 0.09375, "mixed": 0.09375, "parse": 1.0, "on_target": 0.1328125, "cf_score": -0.0078125}
+{"step": 125, "set_name": "ineq", "m": 2, "H": 2, "mode": "none", "success": 0.015625, "any_success": 0.0625, "mixed": 0.0625, "parse": 1.0, "on_target": 0.125}
+{"step": 125, "set_name": "ineq", "m": 2, "H": 2, "mode": "true", "success": 0.0703125, "any_success": 0.25, "mixed": 0.25, "parse": 0.98828125, "on_target": 0.208}
+{"step": 125, "set_name": "ineq", "m": 2, "H": 2, "mode": "counterfactual", "success": 0.015625, "any_success": 0.0625, "mixed": 0.0625, "parse": 1.0, "on_target": 0.1377952755905512, "cf_score": 0.0380859375}
+{"step": 150, "set_name": "distinct", "m": 1, "H": 1, "mode": "none", "success": 0.1171875, "any_success": 0.34375, "mixed": 0.34375, "parse": 0.9921875, "on_target": 0.28346456692913385}
+{"step": 150, "set_name": "distinct", "m": 1, "H": 1, "mode": "true", "success": 0.0859375, "any_success": 0.3125, "mixed": 0.3125, "parse": 1.0, "on_target": 0.2421875}
+{"step": 150, "set_name": "distinct", "m": 1, "H": 1, "mode": "counterfactual", "success": 0.0859375, "any_success": 0.28125, "mixed": 0.28125, "parse": 1.0, "on_target": 0.2421875, "cf_score": 0.0}
+{"step": 150, "set_name": "distinct", "m": 2, "H": 2, "mode": "none", "success": 0.1171875, "any_success": 0.375, "mixed": 0.375, "parse": 0.99609375, "on_target": 0.3510204081632653}
+{"step": 150, "set_name": "distinct", "m": 2, "H": 2, "mode": "true", "success": 0.0859375, "any_success": 0.28125, "mixed": 0.28125, "parse": 0.9921875, "on_target": 0.2967479674796748}
+{"step": 150, "set_name": "distinct", "m": 2, "H": 2, "mode": "counterfactual", "success": 0.09375, "any_success": 0.375, "mixed": 0.375, "parse": 0.9921875, "on_target": 0.3, "cf_score": 0.03515625}
+{"step": 150, "set_name": "ineq", "m": 1, "H": 1, "mode": "none", "success": 0.0234375, "any_success": 0.09375, "mixed": 0.09375, "parse": 1.0, "on_target": 0.1015625}
+{"step": 150, "set_name": "ineq", "m": 1, "H": 1, "mode": "true", "success": 0.03125, "any_success": 0.125, "mixed": 0.125, "parse": 1.0, "on_target": 0.1171875}
+{"step": 150, "set_name": "ineq", "m": 1, "H": 1, "mode": "counterfactual", "success": 0.0234375, "any_success": 0.0625, "mixed": 0.0625, "parse": 0.9765625, "on_target": 0.136, "cf_score": -0.016}
+{"step": 150, "set_name": "ineq", "m": 2, "H": 2, "mode": "none", "success": 0.0234375, "any_success": 0.09375, "mixed": 0.09375, "parse": 1.0, "on_target": 0.15476190476190477}
+{"step": 150, "set_name": "ineq", "m": 2, "H": 2, "mode": "true", "success": 0.046875, "any_success": 0.1875, "mixed": 0.1875, "parse": 0.9921875, "on_target": 0.18972332015810275}
+{"step": 150, "set_name": "ineq", "m": 2, "H": 2, "mode": "counterfactual", "success": 0.046875, "any_success": 0.1875, "mixed": 0.1875, "parse": 0.9921875, "on_target": 0.19444444444444445, "cf_score": -0.0322265625}
+{"step": 175, "set_name": "distinct", "m": 1, "H": 1, "mode": "none", "success": 0.0859375, "any_success": 0.28125, "mixed": 0.28125, "parse": 1.0, "on_target": 0.234375}
+{"step": 175, "set_name": "distinct", "m": 1, "H": 1, "mode": "true", "success": 0.0546875, "any_success": 0.21875, "mixed": 0.21875, "parse": 1.0, "on_target": 0.25}
+{"step": 175, "set_name": "distinct", "m": 1, "H": 1, "mode": "counterfactual", "success": 0.09375, "any_success": 0.28125, "mixed": 0.28125, "parse": 1.0, "on_target": 0.2890625, "cf_score": -0.09375}
+{"step": 175, "set_name": "distinct", "m": 2, "H": 2, "mode": "none", "success": 0.0546875, "any_success": 0.21875, "mixed": 0.21875, "parse": 0.99609375, "on_target": 0.29838709677419356}
+{"step": 175, "set_name": "distinct", "m": 2, "H": 2, "mode": "true", "success": 0.078125, "any_success": 0.25, "mixed": 0.25, "parse": 0.9921875, "on_target": 0.30364372469635625}
+{"step": 175, "set_name": "distinct", "m": 2, "H": 2, "mode": "counterfactual", "success": 0.0546875, "any_success": 0.21875, "mixed": 0.21875, "parse": 0.99609375, "on_target": 0.33877551020408164, "cf_score": -0.052734375}
+{"step": 175, "set_name": "ineq", "m": 1, "H": 1, "mode": "none", "success": 0.015625, "any_success": 0.0625, "mixed": 0.0625, "parse": 1.0, "on_target": 0.1015625}
+{"step": 175, "set_name": "ineq", "m": 1, "H": 1, "mode": "true", "success": 0.03125, "any_success": 0.125, "mixed": 0.125, "parse": 1.0, "on_target": 0.1171875}
+{"step": 175, "set_name": "ineq", "m": 1, "H": 1, "mode": "counterfactual", "success": 0.0078125, "any_success": 0.03125, "mixed": 0.03125, "parse": 1.0, "on_target": 0.15625, "cf_score": 0.0078125}
+{"step": 175, "set_name": "ineq", "m": 2, "H": 2, "mode": "none", "success": 0.03125, "any_success": 0.125, "mixed": 0.125, "parse": 0.98828125, "on_target": 0.20481927710843373}
+{"step": 175, "set_name": "ineq", "m": 2, "H": 2, "mode": "true", "success": 0.03125, "any_success": 0.125, "mixed": 0.125, "parse": 0.99609375, "on_target": 0.20078740157480315}
+{"step": 175, "set_name": "ineq", "m": 2, "H": 2, "mode": "counterfactual", "success": 0.0546875, "any_success": 0.1875, "mixed": 0.1875, "parse": 1.0, "on_target": 0.14624505928853754, "cf_score": 0.00244140625}
+{"step": 200, "set_name": "distinct", "m": 1, "H": 1, "mode": "none", "success": 0.0703125, "any_success": 0.21875, "mixed": 0.21875, "parse": 1.0, "on_target": 0.2109375}
+{"step": 200, "set_name": "distinct", "m": 1, "H": 1, "mode": "true", "success": 0.0859375, "any_success": 0.34375, "mixed": 0.34375, "parse": 1.0, "on_target": 0.2265625}
+{"step": 200, "set_name": "distinct", "m": 1, "H": 1, "mode": "counterfactual", "success": 0.09375, "any_success": 0.34375, "mixed": 0.34375, "parse": 0.984375, "on_target": 0.2222222222222222, "cf_score": 0.07936507936507936}
+{"step": 200, "set_name": "distinct", "m": 2, "H": 2, "mode": "none", "success": 0.0703125, "any_success": 0.21875, "mixed": 0.21875, "parse": 0.9921875, "on_target": 0.37037037037037035}
+{"step": 200, "set_name": "distinct", "m": 2, "H": 2, "mode": "true", "success": 0.09375, "any_success": 0.3125, "mixed": 0.3125, "parse": 0.98828125, "on_target": 0.3130081300813008}
+{"step": 200, "set_name": "distinct", "m": 2, "H": 2, "mode": "counterfactual", "success": 0.109375, "any_success": 0.3125, "mixed": 0.3125, "parse": 0.99609375, "on_target": 0.35655737704918034, "cf_score": -0.0263671875}
+{"step": 200, "set_name": "ineq", "m": 1, "H": 1, "mode": "none", "success": 0.015625, "any_success": 0.0625, "mixed": 0.0625, "parse": 1.0, "on_target": 0.140625}
+{"step": 200, "set_name": "ineq", "m": 1, "H": 1, "mode": "true", "success": 0.015625, "any_success": 0.0625, "mixed": 0.0625, "parse": 1.0, "on_target": 0.1328125}
+{"step": 200, "set_name": "ineq", "m": 1, "H": 1, "mode": "counterfactual", "success": 0.0390625, "any_success": 0.15625, "mixed": 0.15625, "parse": 1.0, "on_target": 0.1796875, "cf_score": -0.0234375}
+{"step": 200, "set_name": "ineq", "m": 2, "H": 2, "mode": "none", "success": 0.03125, "any_success": 0.09375, "mixed": 0.09375, "parse": 0.99609375, "on_target": 0.14624505928853754}
+{"step": 200, "set_name": "ineq", "m": 2, "H": 2, "mode": "true", "success": 0.0703125, "any_success": 0.25, "mixed": 0.25, "parse": 0.99609375, "on_target": 0.16}
+{"step": 200, "set_name": "ineq", "m": 2, "H": 2, "mode": "counterfactual", "success": 0.0234375, "any_success": 0.09375, "mixed": 0.09375, "parse": 1.0, "on_target": 0.1976284584980237, "cf_score": -0.02490234375}
+{"step": 225, "set_name": "distinct", "m": 1, "H": 1, "mode": "none", "success": 0.1015625, "any_success": 0.375, "mixed": 0.375, "parse": 1.0, "on_target": 0.2890625}
+{"step": 225, "set_name": "distinct", "m": 1, "H": 1, "mode": "true", "success": 0.078125, "any_success": 0.28125, "mixed": 0.28125, "parse": 1.0, "on_target": 0.2578125}
+{"step": 225, "set_name": "distinct", "m": 1, "H": 1, "mode": "counterfactual", "success": 0.0546875, "any_success": 0.21875, "mixed": 0.21875, "parse": 0.9921875, "on_target": 0.23622047244094488, "cf_score": 0.007874015748031496}
+{"step": 225, "set_name": "distinct", "m": 2, "H": 2, "mode": "none", "success": 0.0625, "any_success": 0.25, "mixed": 0.25, "parse": 0.98828125, "on_target": 0.2845528455284553}
+{"step": 225, "set_name": "distinct", "m": 2, "H": 2, "mode": "true", "success": 0.09375, "any_success": 0.34375, "mixed": 0.34375, "parse": 0.9921875, "on_target": 0.3603238866396761}
+{"step": 225, "set_name": "distinct", "m": 2, "H": 2, "mode": "counterfactual", "success": 0.109375, "any_success": 0.34375, "mixed": 0.34375, "parse": 1.0, "on_target": 0.3252032520325203, "cf_score": 0.009765625}
+{"step": 225, "set_name": "ineq", "m": 1, "H": 1, "mode": "none", "success": 0.0078125, "any_success": 0.03125, "mixed": 0.03125, "parse": 0.9921875, "on_target": 0.12598425196850394}
+{"step": 225, "set_name": "ineq", "m": 1, "H": 1, "mode": "true", "success": 0.03125, "any_success": 0.125, "mixed": 0.125, "parse": 0.9921875, "on_target": 0.13385826771653545}
+{"step": 225, "set_name": "ineq", "m": 1, "H": 1, "mode": "counterfactual", "success": 0.0390625, "any_success": 0.15625, "mixed": 0.15625, "parse": 0.9921875, "on_target": 0.18110236220472442, "cf_score": -0.023622047244094488}
+{"step": 225, "set_name": "ineq", "m": 2, "H": 2, "mode": "none", "success": 0.03125, "any_success": 0.125, "mixed": 0.125, "parse": 0.99609375, "on_target": 0.1626984126984127}
+{"step": 225, "set_name": "ineq", "m": 2, "H": 2, "mode": "true", "success": 0.0234375, "any_success": 0.09375, "mixed": 0.09375, "parse": 0.984375, "on_target": 0.132}
+{"step": 225, "set_name": "ineq", "m": 2, "H": 2, "mode": "counterfactual", "success": 0.046875, "any_success": 0.125, "mixed": 0.125, "parse": 0.99609375, "on_target": 0.14682539682539683, "cf_score": 0.02978515625}
+{"step": 250, "set_name": "distinct", "m": 1, "H": 1, "mode": "none", "success": 0.0625, "any_success": 0.1875, "mixed": 0.1875, "parse": 1.0, "on_target": 0.21875}
+{"step": 250, "set_name": "distinct", "m": 1, "H": 1, "mode": "true", "success": 0.1015625, "any_success": 0.3125, "mixed": 0.3125, "parse": 1.0, "on_target": 0.3203125}
+{"step": 250, "set_name": "distinct", "m": 1, "H": 1, "mode": "counterfactual", "success": 0.0859375, "any_success": 0.34375, "mixed": 0.34375, "parse": 1.0, "on_target": 0.2109375, "cf_score": 0.0390625}
+{"step": 250, "set_name": "distinct", "m": 2, "H": 2, "mode": "none", "success": 0.0625, "any_success": 0.25, "mixed": 0.25, "parse": 0.9921875, "on_target": 0.29838709677419356}
+{"step": 250, "set_name": "distinct", "m": 2, "H": 2, "mode": "true", "success": 0.0703125, "any_success": 0.28125, "mixed": 0.28125, "parse": 0.9921875, "on_target": 0.2862903225806452}
+{"step": 250, "set_name": "distinct", "m": 2, "H": 2, "mode": "counterfactual", "success": 0.1171875, "any_success": 0.4375, "mixed": 0.4375, "parse": 1.0, "on_target": 0.3181818181818182, "cf_score": -0.017578125}
+{"step": 250, "set_name": "ineq", "m": 1, "H": 1, "mode": "none", "success": 0.015625, "any_success": 0.0625, "mixed": 0.0625, "parse": 1.0, "on_target": 0.125}
+{"step": 250, "set_name": "ineq", "m": 1, "H": 1, "mode": "true", "success": 0.03125, "any_success": 0.0625, "mixed": 0.0625, "parse": 1.0, "on_target": 0.1953125}
+{"step": 250, "set_name": "ineq", "m": 1, "H": 1, "mode": "counterfactual", "success": 0.0078125, "any_success": 0.03125, "mixed": 0.03125, "parse": 1.0, "on_target": 0.109375, "cf_score": 0.09375}
+{"step": 250, "set_name": "ineq", "m": 2, "H": 2, "mode": "none", "success": 0.0703125, "any_success": 0.25, "mixed": 0.25, "parse": 1.0, "on_target": 0.20553359683794467}
+{"step": 250, "set_name": "ineq", "m": 2, "H": 2, "mode": "true", "success": 0.015625, "any_success": 0.0625, "mixed": 0.0625, "parse": 0.99609375, "on_target": 0.16600790513833993}
+{"step": 250, "set_name": "ineq", "m": 2, "H": 2, "mode": "counterfactual", "success": 0.0234375, "any_success": 0.09375, "mixed": 0.09375, "parse": 1.0, "on_target": 0.14682539682539683, "cf_score": 0.001953125}
+{"step": 275, "set_name": "distinct", "m": 1, "H": 1, "mode": "none", "success": 0.0859375, "any_success": 0.34375, "mixed": 0.34375, "parse": 1.0, "on_target": 0.265625}
+{"step": 275, "set_name": "distinct", "m": 1, "H": 1, "mode": "true", "success": 0.0546875, "any_success": 0.1875, "mixed": 0.1875, "parse": 1.0, "on_target": 0.21875}
+{"step": 275, "set_name": "distinct", "m": 1, "H": 1, "mode": "counterfactual", "success": 0.078125, "any_success": 0.21875, "mixed": 0.21875, "parse": 0.9921875, "on_target": 0.23622047244094488, "cf_score": -0.047244094488188976}
+{"step": 275, "set_name": "distinct", "m": 2, "H": 2, "mode": "none", "success": 0.140625, "any_success": 0.46875, "mixed": 0.46875, "parse": 0.9921875, "on_target": 0.3941908713692946}
+{"step": 275, "set_name": "distinct", "m": 2, "H": 2, "mode": "true", "success": 0.078125, "any_success": 0.3125, "mixed": 0.3125, "parse": 0.9921875, "on_target": 0.363265306122449}
+{"step": 275, "set_name": "distinct", "m": 2, "H": 2, "mode": "counterfactual", "success": 0.125, "any_success": 0.40625, "mixed": 0.40625, "parse": 1.0, "on_target": 0.3643724696356275, "cf_score": -0.0166015625}
+{"step": 275, "set_name": "ineq", "m": 1, "H": 1, "mode": "none", "success": 0.0390625, "any_success": 0.125, "mixed": 0.125, "parse": 1.0, "on_target": 0.125}
+{"step": 275, "set_name": "ineq", "m": 1, "H": 1, "mode": "true", "success": 0.0390625, "any_success": 0.15625, "mixed": 0.15625, "parse": 1.0, "on_target": 0.1953125}
+{"step": 275, "set_name": "ineq", "m": 1, "H": 1, "mode": "counterfactual", "success": 0.0390625, "any_success": 0.125, "mixed": 0.125, "parse": 0.9921875, "on_target": 0.13385826771653545, "cf_score": 0.023622047244094488}
+{"step": 275, "set_name": "ineq", "m": 2, "H": 2, "mode": "none", "success": 0.0390625, "any_success": 0.15625, "mixed": 0.15625, "parse": 1.0, "on_target": 0.17786561264822134}
+{"step": 275, "set_name": "ineq", "m": 2, "H": 2, "mode": "true", "success": 0.0703125, "any_success": 0.21875, "mixed": 0.21875, "parse": 0.99609375, "on_target": 0.172}
+{"step": 275, "set_name": "ineq", "m": 2, "H": 2, "mode": "counterfactual", "success": 0.015625, "any_success": 0.0625, "mixed": 0.0625, "parse": 1.0, "on_target": 0.15234375, "cf_score": 0.0390625}
+{"step": 300, "set_name": "distinct", "m": 1, "H": 1, "mode": "none", "success": 0.109375, "any_success": 0.375, "mixed": 0.375, "parse": 1.0, "on_target": 0.2578125}
+{"step": 300, "set_name": "distinct", "m": 1, "H": 1, "mode": "true", "success": 0.1015625, "any_success": 0.40625, "mixed": 0.40625, "parse": 1.0, "on_target": 0.265625}
+{"step": 300, "set_name": "distinct", "m": 1, "H": 1, "mode": "counterfactual", "success": 0.109375, "any_success": 0.4375, "mixed": 0.4375, "parse": 0.9921875, "on_target": 0.28346456692913385, "cf_score": -0.11811023622047244}
+{"step": 300, "set_name": "distinct", "m": 2, "H": 2, "mode": "none", "success": 0.109375, "any_success": 0.375, "mixed": 0.375, "parse": 1.0, "on_target": 0.3522267206477733}
+{"step": 300, "set_name": "distinct", "m": 2, "H": 2, "mode": "true", "success": 0.0859375, "any_success": 0.3125, "mixed": 0.3125, "parse": 0.984375, "on_target": 0.23983739837398374}
+{"step": 300, "set_name": "distinct", "m": 2, "H": 2, "mode": "counterfactual", "success": 0.1328125, "any_success": 0.4375, "mixed": 0.4375, "parse": 0.99609375, "on_target": 0.344, "cf_score": 0.0029296875}
+{"step": 300, "set_name": "ineq", "m": 1, "H": 1, "mode": "none", "success": 0.0234375, "any_success": 0.09375, "mixed": 0.09375, "parse": 1.0, "on_target": 0.1171875}
+{"step": 300, "set_name": "ineq", "m": 1, "H": 1, "mode": "true", "success": 0.0234375, "any_success": 0.09375, "mixed": 0.09375, "parse": 1.0, "on_target": 0.1484375}
+{"step": 300, "set_name": "ineq", "m": 1, "H": 1, "mode": "counterfactual", "success": 0.0390625, "any_success": 0.15625, "mixed": 0.15625, "parse": 1.0, "on_target": 0.1640625, "cf_score": -0.0234375}
+{"step": 300, "set_name": "ineq", "m": 2, "H": 2, "mode": "none", "success": 0.015625, "any_success": 0.0625, "mixed": 0.0625, "parse": 1.0, "on_target": 0.16929133858267717}
+{"step": 300, "set_name": "ineq", "m": 2, "H": 2, "mode": "true", "success": 0.0078125, "any_success": 0.03125, "mixed": 0.03125, "parse": 1.0, "on_target": 0.17647058823529413}
+{"step": 300, "set_name": "ineq", "m": 2, "H": 2, "mode": "counterfactual", "success": 0.0390625, "any_success": 0.15625, "mixed": 0.15625, "parse": 1.0, "on_target": 0.16205533596837945, "cf_score": 0.01025390625}

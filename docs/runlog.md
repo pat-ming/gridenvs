@@ -5,7 +5,7 @@ in `results/runs/`, and everything is also in W&B (project `fbrl`).
 
 ## In flight
 
-As of 2026-11-13 12:51.
+As of 2026-11-13 14:30.
 
 **Hold:** finish `grpo_easy_sets` (residual tasks included), then launch nothing new until Motti
 says otherwise. Logging and analysis are fine.
@@ -17,14 +17,19 @@ task per feedback mode and seed, 300 steps at about 20 s/step (about 1h45m per t
 
 | Mode | Seed 0 | Seed 1 |
 |---|---|---|
-| none | 380390_0, running | 380427_1, running |
-| true | 380427_2, running | 380427_3, running |
-| noise | 380427_4, running | 380390_5, running |
-| residual | 380427_6, pending | 380427_7, pending |
+| none | 380390_0, done | 380427_1, done |
+| true | 380427_2, done | 380427_3, running |
+| noise | 380427_4, running | 380390_5, done |
+| residual | 380427_6, running (since 14:09) | 380427_7, running (since 14:12) |
 
 The other six tasks of 380390 died on a MASTER_PORT collision (fixed in 1010f09) and were
 resubmitted as 380427. Their `grpo_sft-*` run dirs end with status `failed` after 0 steps; ignore them.
-If the residual tasks are still pending at 14:30, resubmit those two indices on `--gres=gpu:a6000:1`.
+The residual tasks got a40s on their own, so they weren't moved. Expect the whole sweep done around 16:00.
+
+Interim, from the four finished runs: GRPO isn't learning. Rollout success is about 7% at the start and
+end of all four, and `rollout/mixed` stays around 40%. Final eval moves are within noise (none-mode
+success 5.7–9.0% vs 5.9% at step 0). The first suspect is the step size: lr 1e-6 decaying linearly to 0
+over 300 steps, `beta` 0. Not acted on, because of the hold.
 
 When they're done, per `env.mode`:
 - Training curves: `rollout/mixed` and `rollout/success` over steps.
