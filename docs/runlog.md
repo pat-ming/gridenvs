@@ -3,6 +3,39 @@
 Newest first. Each entry says what ran, what came out, and what we think it means. Run directories are
 in `results/runs/`, and everything is also in W&B (project `fbrl`).
 
+## 2026-11-13 · Oracle share in the SFT warm start
+
+Same recipe as the 11-10 warm start, but with 0.5 and 1.0 of the demo games played by the oracle
+instead of 0.25. The question was whether stronger demos give `spec` a GRPO signal without teaching
+reliance on the feedback line. Same eval as before. W&B tag `oracle-sweep`, SFT
+[0.5](https://forge.coreweave.com/wandb/cse-5100-fall-2026/fbrl/runs/62qua5ra) /
+[1.0](https://forge.coreweave.com/wandb/cse-5100-fall-2026/fbrl/runs/7cj7v58l), eval
+[0.5](https://forge.coreweave.com/wandb/cse-5100-fall-2026/fbrl/runs/0uytujh1) /
+[1.0](https://forge.coreweave.com/wandb/cse-5100-fall-2026/fbrl/runs/eg1rh6l5), checkpoints in
+`fbrl/models/sft-qwen3-0.6b-oracle{0.5,1.0}`. Success in %, none / true / residual, averaged over the
+four (m, H) cells, and the best cell's share of mixed groups.
+
+| Oracle share | `spec` | `rows` | `ineq` | `distinct` |
+|---|---|---|---|---|
+| 0.25 | 0.2 / 0.1 / 0.3, 9% | 0.5 / 0.6 / 0.2, 12% | 5.2 / 4.0 / 5.5, 45% | 9.1 / 10.7 / 11.5, 75% |
+| 0.5 | 0.1 / 0.2 / 0.6, 12% | 0.6 / 0.7 / 0.5, 12% | 4.7 / 4.6 / 4.5, 39% | 8.3 / 8.3 / 9.2, 62% |
+| 1.0 | 0.3 / 1.6 / 1.8, 34% | 0.8 / 4.2 / 3.6, 48% | 4.9 / 4.2 / 3.8, 44% | 7.2 / 5.8 / 6.3, 47% |
+
+- 0.5 changes nothing. It's within noise of 0.25 everywhere.
+- 1.0 does open up `spec` and `rows`, but only with the line. On `spec` at m=1, H=1, success goes
+  1.2% without the line to 4.9% with it (34% mixed groups vs 9%); `rows` at m=1, H=1 goes 2.0 to 8.0.
+  Without the line, it's no better than 0.25. So the signal it buys is exactly the reliance we were
+  worried about: all-oracle demos teach "read V(s), edit there."
+- 1.0 also breaks parsing, but only when there's a line: 80–84% on `ineq` with true or residual,
+  83–96% on `spec`, and 98–100% with none. Probably a line shape the demos never showed it; not checked yet.
+- `distinct` gets worse as the oracle share goes up (9.1 → 7.2 with none, 75% → 47% mixed). Less
+  random-edit coverage seems to cost exploration on the easy set.
+- Train loss barely moves (1.63 / 1.62 / 1.57), so loss isn't a useful signal for picking the mix.
+
+For H2 this makes 1.0 a bad warm start for the A-vs-C comparison, since the "true" arm starts out
+reliant. Keep 0.25 (which `grpo_easy_sets` already uses), and if `spec` needs a signal, get it from a
+curriculum rather than from the demos.
+
 ## 2026-11-10 · SFT warm start for Qwen3-0.6B-Base
 
 One epoch on 4000 scripted games (25% played by the oracle, the rest random valid edits, modes split

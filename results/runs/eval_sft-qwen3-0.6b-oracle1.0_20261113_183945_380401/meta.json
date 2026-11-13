@@ -1,0 +1,37 @@
+{
+  "created": "2026-11-13T18:39:45.749453+00:00",
+  "host": "a60-2209.engr.wustl.edu",
+  "python": "3.12.16",
+  "argv": [
+    "/engrfs/project/netanel.raviv/motti_k/fbrl/code/src/fbrl/evaluate.py",
+    "--config",
+    "configs/eval.yaml",
+    "--set",
+    "model.name=/engrfs/project/netanel.raviv/motti_k/fbrl/models/sft-qwen3-0.6b-oracle1.0",
+    "--set",
+    "tracking.wandb.group=warmstart",
+    "--set",
+    "experiment.tags=[\"eval\", \"{model.name}\", \"warmstart\", \"oracle-sweep\"]",
+    "--set",
+    "experiment.notes=Eval of the 0.6B-Base warm start with 1.0 solver demos: spec signal (mixed groups) and true vs none gap."
+  ],
+  "cwd": "/engrfs/project/netanel.raviv/motti_k/fbrl/code",
+  "git": "73af895",
+  "slurm": {
+    "job_id": "380401",
+    "job_partition": "general-gpu-long",
+    "job_account": "engr-lab-netanel.raviv",
+    "slurmd_nodename": "a60-2209"
+  },
+  "torch": "2.13.0+cu130",
+  "cuda": "13.0",
+  "gpus": [
+    "NVIDIA RTX A6000"
+  ],
+  "status": "finished",
+  "wandb_id": "eg1rh6l5",
+  "wandb_url": "https://forge.coreweave.com/wandb/cse-5100-fall-2026/fbrl/runs/eg1rh6l5",
+  "gpu_hours": 0.1417874209755569,
+  "best_value": null,
+  "best_step": null
+}

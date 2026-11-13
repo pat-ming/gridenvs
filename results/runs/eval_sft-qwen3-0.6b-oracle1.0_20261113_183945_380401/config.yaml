@@ -1,0 +1,44 @@
+experiment:
+  name: eval_{model.name}
+  tags:
+  - eval
+  - '{model.name}'
+  - warmstart
+  - oracle-sweep
+  notes: 'Eval of the 0.6B-Base warm start with 1.0 solver demos: spec signal (mixed
+    groups) and true vs none gap.'
+  seed: 0
+model:
+  name: /engrfs/project/netanel.raviv/motti_k/fbrl/models/sft-qwen3-0.6b-oracle1.0
+  chat_template_kwargs:
+    enable_thinking: false
+env:
+  name: grid4
+  max_reply_tokens: 32
+eval:
+  instances:
+    set_name:
+    - spec
+    - rows
+    - distinct
+    - ineq
+    m:
+    - 1
+    - 2
+  slack:
+  - 0
+  - 2
+  modes:
+  - none
+  - 'true'
+  - residual
+  n_instances: 64
+  samples: 8
+  temperature: 1.0
+tracking:
+  wandb:
+    enabled: true
+    project: fbrl
+    group: warmstart
+  best:
+    metric: null
