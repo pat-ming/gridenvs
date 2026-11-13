@@ -1,0 +1,20 @@
+# First A-vs-C comparison: GRPO from the 0.6B-Base warm start on the sets that give a signal.
+experiment:
+  notes: "GRPO from the 0.6B-Base warm start on distinct + ineq, feedback mode {env.mode}, seed {experiment.seed}: does GRPO learn, and does training with the true line change no-feedback success and counterfactual reliance?"
+
+model:
+  name: /engrfs/project/netanel.raviv/motti_k/fbrl/models/sft-qwen3-0.6b
+
+env:
+  instances: {set_name: [distinct, ineq], m: [1, 2]}
+  slack: [0, 1]
+  # Size of the noise line, drawn like E_C's |V| on these sets after SFT (per 100 turns:
+  # 0: 4, 1: 63, 2: 26, 3: 6, 4: 1), so E_D matches E_C in length.
+  noise_sizes: [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 4]
+
+eval:
+  instances: {set_name: [distinct, ineq], m: [1, 2]}
+
+grpo:
+  per_device_train_batch_size: 16
+  gradient_accumulation_steps: 8
