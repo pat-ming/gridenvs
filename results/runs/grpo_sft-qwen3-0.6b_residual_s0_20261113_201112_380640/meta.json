@@ -1,0 +1,37 @@
+{
+  "created": "2026-11-13T20:11:12.531867+00:00",
+  "host": "a40-2205.engr.wustl.edu",
+  "python": "3.12.16",
+  "argv": [
+    "/engrfs/project/netanel.raviv/motti_k/fbrl/code/src/fbrl/train_grpo.py",
+    "--config",
+    "configs/grpo.yaml",
+    "--config",
+    "configs/experiments/grpo_easy_sets.yaml",
+    "--set",
+    "tracking.wandb.group=grpo_easy_sets",
+    "--set",
+    "env.mode=residual",
+    "--set",
+    "experiment.seed=0"
+  ],
+  "cwd": "/engrfs/project/netanel.raviv/motti_k/fbrl/code",
+  "git": "c471edd",
+  "slurm": {
+    "job_id": "380640",
+    "job_partition": "general-gpu-long",
+    "job_account": "engr-lab-netanel.raviv",
+    "slurmd_nodename": "a40-2205"
+  },
+  "torch": "2.13.0+cu130",
+  "cuda": "13.0",
+  "gpus": [
+    "NVIDIA A40"
+  ],
+  "status": "finished",
+  "wandb_id": "tdwkdqwg",
+  "wandb_url": "https://forge.coreweave.com/wandb/cse-5100-fall-2026/fbrl/runs/tdwkdqwg",
+  "gpu_hours": 1.7079542281323423,
+  "best_value": null,
+  "best_step": null
+}

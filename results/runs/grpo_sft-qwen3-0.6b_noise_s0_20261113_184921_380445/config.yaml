@@ -1,0 +1,176 @@
+experiment:
+  name: grpo_{model.name}_{env.mode}_s{experiment.seed}
+  tags:
+  - grpo
+  - '{model.name}'
+  - mode-{env.mode}
+  - '{env.instances.set_name}'
+  notes: 'GRPO from the 0.6B-Base warm start on distinct + ineq, feedback mode {env.mode},
+    seed {experiment.seed}: does GRPO learn, and does training with the true line
+    change no-feedback success and counterfactual reliance?'
+  seed: 0
+model:
+  name: /engrfs/project/netanel.raviv/motti_k/fbrl/models/sft-qwen3-0.6b
+  chat_template_kwargs:
+    enable_thinking: false
+  lora: null
+env:
+  name: grid4
+  mode: noise
+  instances:
+    set_name:
+    - distinct
+    - ineq
+    m:
+    - 1
+    - 2
+  slack:
+  - 0
+  - 1
+  noise_sizes:
+  - 0
+  - 0
+  - 0
+  - 0
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 1
+  - 2
+  - 2
+  - 2
+  - 2
+  - 2
+  - 2
+  - 2
+  - 2
+  - 2
+  - 2
+  - 2
+  - 2
+  - 2
+  - 2
+  - 2
+  - 2
+  - 2
+  - 2
+  - 2
+  - 2
+  - 2
+  - 2
+  - 2
+  - 2
+  - 2
+  - 2
+  - 3
+  - 3
+  - 3
+  - 3
+  - 3
+  - 3
+  - 4
+  max_reply_tokens: 32
+eval:
+  every: 25
+  at_start: true
+  instances:
+    set_name:
+    - distinct
+    - ineq
+    m:
+    - 1
+    - 2
+  slack:
+  - 0
+  modes:
+  - none
+  - 'true'
+  - counterfactual
+  n_instances: 32
+  samples: 4
+  temperature: 1.0
+tracking:
+  wandb:
+    enabled: true
+    project: fbrl
+    group: grpo_easy_sets
+  best:
+    metric: null
+  rollout_table_every: 25
+grpo:
+  max_steps: 300
+  per_device_train_batch_size: 16
+  gradient_accumulation_steps: 8
+  num_generations: 8
+  learning_rate: 1.0e-06
+  beta: 0.0
+  bf16: true
+  model_init_kwargs:
+    dtype: bfloat16
+  use_vllm: true
+  vllm_mode: colocate
+  vllm_gpu_memory_utilization: 0.3
+  vllm_max_model_length: 4096
+  max_completion_length: 1024
+  logging_steps: 1
+  save_steps: 100
+  log_completions: false

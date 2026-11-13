@@ -5,42 +5,41 @@ in `results/runs/`, and everything is also in W&B (project `fbrl`).
 
 ## In flight
 
-As of 2026-11-13 14:30.
+As of 2026-11-13 16:15. Nothing running.
 
-**Hold:** finish `grpo_easy_sets` (residual tasks included), then launch nothing new until Motti
-says otherwise. Logging and analysis are fine.
+**Hold:** launch nothing new until Motti says otherwise. Logging and analysis are fine.
 
-**`grpo_easy_sets`**: GRPO from the 0.25 warm start (`sft-qwen3-0.6b`) on `distinct` + `ineq`, one
-task per feedback mode and seed, 300 steps at about 20 s/step (about 1h45m per task). W&B group
-`grpo_easy_sets`, logs in `$FBRL/logs/grpo_easy_sets-<array>_<task>.out`, grid in
-`$FBRL/sweeps/grpo_easy_sets.txt`.
+## 2026-11-13 · `grpo_easy_sets`: first GRPO comparison across feedback modes
 
-| Mode | Seed 0 | Seed 1 |
-|---|---|---|
-| none | 380390_0, done | 380427_1, done |
-| true | 380427_2, done | 380427_3, running |
-| noise | 380427_4, running | 380390_5, done |
-| residual | 380427_6, running (since 14:09) | 380427_7, running (since 14:12) |
+GRPO from the 0.25 warm start (`sft-qwen3-0.6b`) on `distinct` + `ineq` (m ∈ {1, 2}, slack 0 or 1),
+one run per feedback mode and seed, 300 steps of 128 episodes, lr 1e-6 decaying linearly to 0, `beta` 0.
+Eval every 25 steps on 32 held-out instances × 4 samples per cell. W&B group `grpo_easy_sets`,
+run dirs `grpo_sft-qwen3-0.6b_<mode>_s<seed>_*`. (Six tasks of the first array died at step 0 on a
+MASTER_PORT collision, fixed in 1010f09, and were rerun; their dirs say `failed`.)
 
-The other six tasks of 380390 died on a MASTER_PORT collision (fixed in 1010f09) and were
-resubmitted as 380427. Their `grpo_sft-*` run dirs end with status `failed` after 0 steps; ignore them.
-The residual tasks got a40s on their own, so they weren't moved. Expect the whole sweep done around 16:00.
+GRPO didn't learn in any arm. Training success is about 7% at the start and end of every run, and
+about 40% of groups stay mixed throughout, so there was signal to learn from. It just didn't move the
+policy. Final eval, success in % averaged over the two (m, H) cells, seed 0 / seed 1:
 
-Interim, from the four finished runs: GRPO isn't learning. Rollout success is about 7% at the start and
-end of all four, and `rollout/mixed` stays around 40%. Final eval moves are within noise (none-mode
-success 5.7–9.0% vs 5.9% at step 0). The first suspect is the step size: lr 1e-6 decaying linearly to 0
-over 300 steps, `beta` 0. Not acted on, because of the hold.
+| Mode | `distinct` none | `distinct` true | `ineq` none | `ineq` true | cf_score, `distinct` |
+|---|---|---|---|---|---|
+| step 0 | 10.2 | 9.8 | 1.6 | 5.9 | +0.08 |
+| none | 12.9 / 9.4 | 9.8 / 11.3 | 5.1 / 2.0 | 5.1 / 2.3 | +0.02 / -0.05 |
+| true | 12.1 / 9.4 | 9.8 / 10.9 | 4.7 / 3.1 | 3.1 / 3.1 | -0.00 / -0.02 |
+| noise | 10.9 / 10.9 | 9.0 / 9.4 | 5.1 / 2.0 | 3.9 / 1.6 | +0.01 / -0.06 |
 
-When they're done, per `env.mode`:
-- Training curves: `rollout/mixed` and `rollout/success` over steps.
-- **H1**: held-out `eval/*_none/success` vs `eval/*_true/success`. Does training without the line raise
-  no-feedback success more than training with it?
-- **H2**: final `eval/*_counterfactual/cf_score`. Does it go positive for `true` and `residual`, i.e. does
-  the model follow a false line?
-- `harness compare --where tracking.wandb.group=grpo_easy_sets --group-by env.mode --metrics ...`
-  gives mean ± std over the two seeds. With two seeds, call differences tentative unless they're large.
-- Ignore `completions/clipped_ratio`. It's about 0.75 because replies end on `<|im_end|>` rather
-  than `<|endoftext|>`, not because anything is truncated.
+- With nothing learned, H1 and H2 can't be answered from this sweep. The arms differ by less than the
+  seeds do, and cf_score sits around 0 everywhere.
+- `residual` is left out because it's identical to `true` here, bit for bit, for the same seed.
+  The residual line only adds the shortfall for sum constraints, and `distinct` and `ineq` have none.
+  So the sweep was really three arms. Residual only means something on `spec` and `rows`.
+- The likely reason it didn't learn is the step size. 1e-6, decaying to 0 over 300 steps, is small for
+  a 0.6B model, and the policy barely moved (rollout success and eval never leave the step-0 band).
+  Next would be a short lr sweep on one arm (say `none`, 3e-6 to 1e-5, constant lr) before rerunning the
+  comparison. Not launched, because of the hold.
+- `harness compare --group-by env.mode` counts the 0-step failed runs in `n` (they have a
+  `summary.json`), so it reports n=3–4 for two real seeds. The means are still right, since failed
+  runs contribute no values.
 
 ## 2026-11-13 · Oracle share in the SFT warm start
 
