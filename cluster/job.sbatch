@@ -25,5 +25,7 @@ nvidia-smi --query-gpu=name,memory.total,driver_version --format=csv,noheader
 # its own, so drop those entries to keep the two from mixing.
 apptainer exec --nv --bind /engrfs:/engrfs,/scratch:/scratch "$IMAGE" bash -c '
 	export LD_LIBRARY_PATH=$(tr ":" "\n" <<<"${LD_LIBRARY_PATH:-}" | grep -v -e torch -e dist-packages | paste -sd:)
+	# The image sets MASTER_PORT=53394, which collides when two jobs share a node.
+	export MASTER_PORT=$((20000 + SLURM_JOB_ID % 40000))
 	cd "$FBRL/code" && exec "$UV_PROJECT_ENVIRONMENT/bin/python" -m "$@"
 ' _ "$@"
