@@ -3,6 +3,32 @@
 Newest first. Each entry says what ran, what came out, and what we think it means. Run directories are
 in `results/runs/`, and everything is also in W&B (project `fbrl`).
 
+## In flight
+
+As of 2026-11-13 12:51.
+
+**`grpo_easy_sets`**: GRPO from the 0.25 warm start (`sft-qwen3-0.6b`) on `distinct` + `ineq`, one
+task per feedback mode and seed, 300 steps at about 20 s/step (about 1h45m per task). W&B group
+`grpo_easy_sets`, logs in `$FBRL/logs/grpo_easy_sets-<array>_<task>.out`, grid in
+`$FBRL/sweeps/grpo_easy_sets.txt`.
+
+| Mode | Seed 0 | Seed 1 |
+|---|---|---|
+| none | 380390_0, running | 380427_1, running |
+| true | 380427_2, running | 380427_3, running |
+| noise | 380427_4, running | 380390_5, running |
+| residual | 380427_6, pending | 380427_7, pending |
+
+The other six tasks of 380390 died on a MASTER_PORT collision (fixed in 1010f09) and were
+resubmitted as 380427.
+
+When they're done:
+- Does reward move off about 0.07, and does `frac_reward_zero_std` (about 0.55 at the start) drop?
+- Success without the line, `true` vs `none`. Did training with the line help or hurt no-feedback play?
+- The counterfactual eval cells for the `true` arm, as a reliance check.
+- Ignore `completions/clipped_ratio`. It's about 0.75 because replies end on `<|im_end|>` rather
+  than `<|endoftext|>`, not because anything is truncated.
+
 ## 2026-11-13 · Oracle share in the SFT warm start
 
 Same recipe as the 11-10 warm start, but with 0.5 and 1.0 of the demo games played by the oracle
