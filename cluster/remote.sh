@@ -45,7 +45,7 @@ sync)
 	(cd "$HERE" && git describe --always --dirty 2>/dev/null || echo "no-git $(date -u +%FT%TZ)") >"$HERE/GIT_STATE"
 	remote "mkdir -p $FBRL/code"
 	rsync -az --delete -e "ssh ${SSH_OPTS[*]}" \
-		--exclude .git --exclude context.txt --exclude .venv --exclude runs --exclude wandb --exclude __pycache__ \
+		--exclude .git --exclude context.txt --exclude .venv --exclude /runs --exclude /wandb --exclude __pycache__ \
 		--exclude .latex_aux --exclude '*.pdf' --exclude '*.tex' --exclude .pytest_cache --exclude .ruff_cache \
 		"$HERE/" "$HOST:$FBRL/code/"
 	echo "synced $(cat "$HERE/GIT_STATE") -> $HOST:$FBRL/code"
