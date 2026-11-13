@@ -7,6 +7,9 @@ in `results/runs/`, and everything is also in W&B (project `fbrl`).
 
 As of 2026-11-13 12:51.
 
+**Hold:** finish `grpo_easy_sets` (residual tasks included), then launch nothing new until Motti
+says otherwise. Logging and analysis are fine.
+
 **`grpo_easy_sets`**: GRPO from the 0.25 warm start (`sft-qwen3-0.6b`) on `distinct` + `ineq`, one
 task per feedback mode and seed, 300 steps at about 20 s/step (about 1h45m per task). W&B group
 `grpo_easy_sets`, logs in `$FBRL/logs/grpo_easy_sets-<array>_<task>.out`, grid in
