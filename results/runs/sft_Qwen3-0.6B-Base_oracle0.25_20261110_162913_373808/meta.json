@@ -1,0 +1,35 @@
+{
+  "created": "2026-11-10T16:29:13.264726+00:00",
+  "host": "a60-2208.engr.wustl.edu",
+  "python": "3.12.16",
+  "argv": [
+    "/engrfs/project/netanel.raviv/motti_k/fbrl/code/src/fbrl/train_sft.py",
+    "--config",
+    "configs/sft.yaml",
+    "--config",
+    "configs/models/qwen3-0.6b.yaml",
+    "--set",
+    "experiment.export=/engrfs/project/netanel.raviv/motti_k/fbrl/models/sft-qwen3-0.6b",
+    "--set",
+    "+experiment.tags=[\"sft\", \"{model.name}\", \"warmstart\"]"
+  ],
+  "cwd": "/engrfs/project/netanel.raviv/motti_k/fbrl/code",
+  "git": "62cb5ad-dirty",
+  "slurm": {
+    "job_id": "373808",
+    "job_partition": "general-gpu-long",
+    "job_account": "engr-lab-netanel.raviv",
+    "slurmd_nodename": "a60-2208"
+  },
+  "torch": "2.13.0+cu130",
+  "cuda": "13.0",
+  "gpus": [
+    "NVIDIA RTX A6000"
+  ],
+  "status": "finished",
+  "wandb_id": "toicvfm8",
+  "wandb_url": "https://forge.coreweave.com/wandb/cse-5100-fall-2026/fbrl/runs/toicvfm8",
+  "gpu_hours": 0.17534357329882266,
+  "best_value": null,
+  "best_step": null
+}

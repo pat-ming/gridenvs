@@ -1,0 +1,54 @@
+experiment:
+  name: sft_{model.name}_oracle{demos.oracle}
+  tags:
+  - sft
+  - '{model.name}'
+  - warmstart
+  notes: SFT warm start for {model.name} on scripted demos ({demos.oracle} solved
+    by the oracle), so GRPO starts from a model that follows the format.
+  seed: 0
+  export: /engrfs/project/netanel.raviv/motti_k/fbrl/models/sft-qwen3-0.6b
+model:
+  name: Qwen/Qwen3-0.6B-Base
+  chat_template_kwargs:
+    enable_thinking: false
+env:
+  name: grid4
+  instances:
+    set_name:
+    - spec
+    m:
+    - 1
+    - 2
+  slack:
+  - 0
+  - 1
+  noise_sizes: null
+  max_reply_tokens: 32
+demos:
+  n_episodes: 4000
+  oracle: 0.25
+  modes:
+  - none
+  - 'true'
+  - noise
+  - residual
+tracking:
+  wandb:
+    enabled: true
+    project: fbrl
+    group: sft
+  best:
+    metric: null
+sft:
+  num_train_epochs: 1
+  per_device_train_batch_size: 32
+  learning_rate: 1.0e-05
+  lr_scheduler_type: cosine
+  warmup_steps: 0.03
+  bf16: true
+  model_init_kwargs:
+    dtype: bfloat16
+  logging_steps: 5
+  save_strategy: 'no'
+  max_length: 2048

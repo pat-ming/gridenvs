@@ -3,6 +3,27 @@
 Newest first. Each entry says what ran, what came out, and what we think it means. Run directories are
 in `results/runs/`, and everything is also in W&B (project `fbrl`).
 
+## 2026-11-10 · SFT warm start for Qwen3-0.6B-Base
+
+One epoch on 4000 scripted games (25% played by the oracle, the rest random valid edits, modes split
+evenly over none / true / noise / residual), loss on reply tokens only. Then the same eval as the
+baselines. [SFT](https://forge.coreweave.com/wandb/cse-5100-fall-2026/fbrl/runs/toicvfm8),
+[eval](https://forge.coreweave.com/wandb/cse-5100-fall-2026/fbrl/runs/zt3q86vr), checkpoint in
+`fbrl/models/sft-qwen3-0.6b`. (The first attempt died on `warmup_ratio`, which transformers 5 dropped.)
+
+| | `spec` | `rows` | `ineq` | `distinct` |
+|---|---|---|---|---|
+| success %, none / true / residual | 0.3 / 0.1 / 0.3 | 0.5 / 0.6 / 0.2 | 5.2 / 4.0 / 5.5 | 9.1 / 10.7 / 11.5 |
+| mixed groups, best cell | 9% | 12% | 45% | 75% |
+
+- The format is fixed: parse went from 0% to 98–100%.
+- It lands about where the 0.6B instruct model is, so the warm start did its job and nothing more.
+  `spec` still has almost no GRPO signal, while `distinct` and `ineq` have plenty.
+- No sign that SFT taught reliance on the line: true vs none is +1.6 points on `distinct`, -1.2 on
+  `ineq`, which is noise at this sample size. That was the worry with oracle demos, and it didn't show up.
+- On-target edits on `spec` dropped (0.31 vs 0.44 for instruct at m=1, H=1). The 75% random demos
+  taught it to edit anywhere, which is fine as a starting point but worth knowing.
+
 ## 2026-11-09 · GRPO smoke on `spec`
 
 Qwen3-0.6B (instruct), 10 steps of 128 episodes, `spec` with m ∈ {1, 2}, E_C, eval every 5 steps.

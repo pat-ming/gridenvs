@@ -1,0 +1,15 @@
+{
+  "episodes": 4000,
+  "demo_success": 0.247,
+  "gpu0_util_mean": 0.0,
+  "gpu0_mem_peak_gb": 0.59,
+  "gpu0_energy_kwh": 0.0048,
+  "name": "sft_Qwen3-0.6B-Base_oracle0.25",
+  "tags": [],
+  "status": "failed",
+  "elapsed_sec": 397.0,
+  "gpu_hours": 0.1103,
+  "best_metric": null,
+  "best_value": null,
+  "best_step": null
+}
