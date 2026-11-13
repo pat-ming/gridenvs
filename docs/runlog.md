@@ -20,12 +20,17 @@ task per feedback mode and seed, 300 steps at about 20 s/step (about 1h45m per t
 | residual | 380427_6, pending | 380427_7, pending |
 
 The other six tasks of 380390 died on a MASTER_PORT collision (fixed in 1010f09) and were
-resubmitted as 380427.
+resubmitted as 380427. Their `grpo_sft-*` run dirs end with status `failed` after 0 steps; ignore them.
+If the residual tasks are still pending at 14:30, resubmit those two indices on `--gres=gpu:a6000:1`.
 
-When they're done:
-- Does reward move off about 0.07, and does `frac_reward_zero_std` (about 0.55 at the start) drop?
-- Success without the line, `true` vs `none`. Did training with the line help or hurt no-feedback play?
-- The counterfactual eval cells for the `true` arm, as a reliance check.
+When they're done, per `env.mode`:
+- Training curves: `rollout/mixed` and `rollout/success` over steps.
+- **H1**: held-out `eval/*_none/success` vs `eval/*_true/success`. Does training without the line raise
+  no-feedback success more than training with it?
+- **H2**: final `eval/*_counterfactual/cf_score`. Does it go positive for `true` and `residual`, i.e. does
+  the model follow a false line?
+- `harness compare --where tracking.wandb.group=grpo_easy_sets --group-by env.mode --metrics ...`
+  gives mean ± std over the two seeds. With two seeds, call differences tentative unless they're large.
 - Ignore `completions/clipped_ratio`. It's about 0.75 because replies end on `<|im_end|>` rather
   than `<|endoftext|>`, not because anything is truncated.
 
