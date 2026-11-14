@@ -5,12 +5,14 @@ in `results/runs/`, and everything is also in W&B (project `fbrl`).
 
 ## In flight
 
-As of 2026-11-14 14:00. Nothing running; GPUs handed back. Ready to launch when Motti says go:
+As of 2026-11-14 14:07. Approved: the two steps below, nothing else.
 
-1. Rerun the 0.25 SFT warm start with the `<|im_end|>` fix (2010aea), then the usual eval. One GPU,
-   about 20 min. Gate: eval `stopped` above 0.95 in every cell, with `parse` still about 1.0.
-2. If it passes, the LR sweep again from the new warm start, on two GPUs: 1e-5 and 3e-5, constant with
-   10 warmup steps, `none` arm, seed 0. Check `rollout/success` and that `stopped` stays high.
+1. **Running:** the 0.25 SFT warm start with the `<|im_end|>` fix (job 382290, a6000), exporting to
+   `models/sft-qwen3-0.6b`, then its eval (382291, starts when the SFT finishes). W&B tag `im-end-fix`.
+   About 25 min for both. Gate: eval `stopped` above 0.95 in every cell, with `parse` still about 1.0.
+2. **If it passes:** the LR sweep again from the new warm start, on two GPUs: 1e-5 and 3e-5, constant with
+   10 warmup steps, `none` arm, seed 0 (`configs/experiments/grpo_lr.yaml`). Check `rollout/success`
+   and that `stopped` stays high. If the gate fails, stop and look before spending more GPU time.
 
 ## 2026-11-14 · The SFT warm start never learned to stop
 
