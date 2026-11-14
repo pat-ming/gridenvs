@@ -104,7 +104,7 @@ def sampling_params(ev: dict, max_reply_tokens: int, stop: int):
 
 
 def log_cells(run: Run, cells: list[dict], step: int | None) -> None:
-    stats = ("success", "mixed", "parse", "on_target", "cf_score")
+    stats = ("success", "mixed", "parse", "stopped", "on_target", "cf_score")
     run.log(
         {f"{cell_name(c)}/{s}": c[s] for c in cells for s in stats if s in c},
         step=step,

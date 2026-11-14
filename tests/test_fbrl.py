@@ -1,4 +1,5 @@
 import pytest
+import torch
 
 from fbrl.grid import load_env
 
@@ -45,3 +46,27 @@ def test_oracle_demos_solve_and_only_replies_are_trained():
     text = tok.decode(trained)
     assert text.count("EDIT") == text.count("<|im_end|>") >= 1
     assert "violated" not in text and "<|im_start|>" not in text
+
+
+def test_end_of_reply_starts_as_a_copy_of_endoftext_only_when_untrained():
+    transformers = pytest.importorskip("transformers")
+    from fbrl.train_sft import init_end_of_reply
+
+    cfg = transformers.Qwen3Config(
+        vocab_size=64,
+        hidden_size=16,
+        intermediate_size=32,
+        num_hidden_layers=1,
+        num_attention_heads=2,
+        num_key_value_heads=1,
+        head_dim=8,
+        tie_word_embeddings=True,
+    )
+    model = transformers.AutoModelForCausalLM.from_config(cfg)
+    emb = model.get_input_embeddings().weight
+    with torch.no_grad():
+        emb[5] *= 0.1  # untrained, like Qwen base's <|im_end|>
+    assert init_end_of_reply(model, end_id=5, like_id=7)
+    assert torch.equal(emb[5], emb[7])
+    assert torch.equal(model.get_output_embeddings().weight[5], emb[7])
+    assert not init_end_of_reply(model, end_id=5, like_id=9)  # trained now: left alone

@@ -82,6 +82,7 @@ class Episode:
     mask: list[int] = field(default_factory=list)
     logprobs: list[float] = field(default_factory=list)
     turn_starts: list[int] = field(default_factory=list)
+    stopped: list[bool] = field(default_factory=list)
     reward: float = 0.0
     done: bool = False
 
@@ -135,6 +136,7 @@ def start(env, inst: dict, fmt: ChatFormat) -> Episode:
 
 def advance(e: Episode, fmt: ChatFormat, reply: list[int], lps: list[float]) -> None:
     e.turn_starts.append(len(e.ids))
+    e.stopped.append(bool(reply) and reply[-1] == fmt.end_of_reply)
     e.ids += reply
     e.mask += [1] * len(reply)
     e.logprobs += lps
@@ -171,7 +173,7 @@ def play(llm, fmt: ChatFormat, episodes: list[Episode], sampling) -> None:
 
 def episode_row(e: Episode, env_name: str) -> dict:
     turns = []
-    for t in e.env.log:
+    for t, stopped in zip(e.env.log, e.stopped, strict=True):
         on_target = None
         if t["action"] is not None and t["V"]:
             scope = frozenset().union(*(e.env.cs[k].scope() for k in t["V"]))
@@ -183,6 +185,7 @@ def episode_row(e: Episode, env_name: str) -> dict:
                 "text": t["text"],
                 "action": t["action"],
                 "on_target": on_target,
+                "stopped": stopped,
             }
         )
     return {"reward": e.reward, "turns": turns}
@@ -199,5 +202,7 @@ def summarize(rows: list[dict], group_size: int) -> dict:
         "any_success": float((wins > 0).mean()),
         "mixed": float(((wins > 0) & (wins < group_size)).mean()),
         "parse": float(np.mean([t["action"] is not None for t in turns])),
+        # parse only needs an EDIT somewhere; stopped catches replies that run on to the cap
+        "stopped": float(np.mean([t["stopped"] for t in turns])),
         "on_target": float(np.mean(targeted)) if targeted else float("nan"),
     }

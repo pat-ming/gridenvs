@@ -12,9 +12,10 @@ import os
 import shutil
 
 import numpy as np
+import torch
 from datasets import Dataset
 from peft import LoraConfig
-from transformers import AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer
 from trl import SFTConfig, SFTTrainer
 
 from fbrl.grid import ChatFormat, advance, load_env, sample_params, start
@@ -41,6 +42,20 @@ def random_reply(env, env_name: str, rng) -> str:
     if env_name == "grid4":
         return f"EDIT {r} {c} {int(rng.integers(10))}"
     return f"WRITE {int(rng.integers(1, 10))} {r} {c}"
+
+
+def init_end_of_reply(model, end_id: int, like_id: int) -> bool:
+    """Qwen base checkpoints ship <|im_end|> barely trained (row norm ~0.35 against
+    ~0.97), and one SFT epoch at 1e-5 can't grow it, so the model never learns to end
+    a reply. Start it as a copy of <|endoftext|>, which the base model already uses to
+    stop. Returns whether the row was replaced."""
+    rows = {model.get_input_embeddings().weight, model.get_output_embeddings().weight}
+    with torch.no_grad():
+        if all(w[end_id].norm() >= 0.5 * w.norm(dim=1).median() for w in rows):
+            return False
+        for w in rows:
+            w[end_id] = w[like_id]
+    return True
 
 
 def demo_dataset(cfg: dict, tok) -> tuple[Dataset, dict]:
@@ -86,15 +101,22 @@ def main() -> None:
         dataset, stats = demo_dataset(cfg, tok)
         run.summary.update(stats)
         run.event("demos", **stats)
+        sft_args = dict(cfg["sft"])
+        model = AutoModelForCausalLM.from_pretrained(
+            cfg["model"]["name"], **sft_args.pop("model_init_kwargs", {})
+        )
+        end_id, like_id = tok.convert_tokens_to_ids(["<|im_end|>", "<|endoftext|>"])
+        if init_end_of_reply(model, end_id, like_id):
+            run.event("init_end_of_reply", copied_from="<|endoftext|>")
         args = SFTConfig(
             output_dir=str(run.dir / "checkpoints"),
             run_name=run.dir.name,
             seed=exp["seed"],
             report_to="wandb" if run.wandb else "none",
-            **cfg["sft"],
+            **sft_args,
         )
         trainer = SFTTrainer(
-            model=cfg["model"]["name"],
+            model=model,
             args=args,
             train_dataset=dataset,
             processing_class=tok,
