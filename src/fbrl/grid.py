@@ -112,6 +112,8 @@ class ChatFormat:
         # e.g. "<|im_end|>\n<|im_start|>user\n@@OBS@@<|im_end|>\n<|im_start|>assistant\n"
         self.between = text[text.index(REPLY) + len(REPLY) :]
         self.end_of_reply = tok.convert_tokens_to_ids("<|im_end|>")
+        # vLLM also stops on the model's EOS, which base-model warm starts sometimes use
+        self.stops = {self.end_of_reply, tok.eos_token_id}
 
     def first(self, obs: str) -> list[int]:
         text = self.tok.apply_chat_template(
@@ -136,7 +138,7 @@ def start(env, inst: dict, fmt: ChatFormat) -> Episode:
 
 def advance(e: Episode, fmt: ChatFormat, reply: list[int], lps: list[float]) -> None:
     e.turn_starts.append(len(e.ids))
-    e.stopped.append(bool(reply) and reply[-1] == fmt.end_of_reply)
+    e.stopped.append(bool(reply) and reply[-1] in fmt.stops)
     e.ids += reply
     e.mask += [1] * len(reply)
     e.logprobs += lps
