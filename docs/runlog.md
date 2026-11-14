@@ -5,27 +5,50 @@ in `results/runs/`, and everything is also in W&B (project `fbrl`).
 
 ## In flight
 
-As of 2026-11-14 13:05. The hold is lifted for this sweep only; check before launching anything else.
+As of 2026-11-14 14:00. Nothing running; GPUs handed back. Ready to launch when Motti says go:
 
-**`grpo_lr`** (array 382173): does GRPO learn at all with a bigger step? `grpo_easy_sets` didn't at
-1e-6 with linear decay. One arm (`none`, seed 0), same setup otherwise, 10 warmup steps. W&B group
-`grpo_lr`, grid in `$FBRL/sweeps/grpo_lr.txt`, config `configs/experiments/grpo_lr.yaml`. About
-1h45m per task, so done around 14:50.
+1. Rerun the 0.25 SFT warm start with the `<|im_end|>` fix (2010aea), then the usual eval. One GPU,
+   about 20 min. Gate: eval `stopped` above 0.95 in every cell, with `parse` still about 1.0.
+2. If it passes, the LR sweep again from the new warm start, on two GPUs: 1e-5 and 3e-5, constant with
+   10 warmup steps, `none` arm, seed 0. Check `rollout/success` and that `stopped` stays high.
 
-| Task | lr | Schedule |
-|---|---|---|
-| 382173_0 | 3e-6 | constant |
-| 382173_1 | 1e-5 | constant |
-| 382173_2 | 3e-5 | constant |
-| 382173_3 | 1e-5 | cosine |
+## 2026-11-14 · The SFT warm start never learned to stop
 
-When done:
-- Does `rollout/success` climb above the about 7% the 1e-6 runs sat at, and does eval `none` success follow?
-- Collapse checks for the high rates (`beta` is 0): entropy, `rollout/parse`, completion length.
-- Constant vs cosine at 1e-5: does the schedule shape matter at this length?
-- If one rate clearly learns, that sets the rate for rerunning the A/C/D comparison with more seeds.
+While reading the `grpo_lr` sweep (array 382173, cancelled about halfway), the 3e-5 run's entropy fell
+from about 3.5 to 0.09 at step 50. The rollouts showed why. Every reply is `EDIT r c v` followed by junk
+until the 32-token cap, and at 3e-5 the junk collapsed into one repeated token. The edits themselves
+stayed varied (7.8 distinct action sequences per group of 8).
+
+The SFT checkpoint already did this: only 0.1% of its eval replies were a clean `EDIT r c v`. The
+cause is the stop token. In Qwen3-0.6B-Base, `<|im_end|>` has an embedding norm of 0.35 against a
+median of 0.97, so it was barely trained, and after our SFT it was 0.349. One epoch at 1e-5 moves a
+weight by about 1e-3, which can't grow it. The demos did put `<|im_end|>` in the loss; the model just
+couldn't learn to predict it.
+
+What this broke:
+- `parse` hid it. It only asks for an `EDIT` somewhere in the reply, so it read 98–100% throughout.
+- The env takes the last `EDIT` in a reply, so junk that happens to contain another one replaces the
+  model's edit with a random one.
+- GRPO's update was spread over about 25 junk tokens per turn for every 5 that mattered, which may be
+  why `grpo_easy_sets` didn't learn.
+- `completions/clipped_ratio` (about 0.75) was real truncation. The earlier note calling it cosmetic
+  was wrong.
+
+So every result built on the warm start is invalid: the 11-10 SFT and its eval, the oracle-share
+sweep, `grpo_easy_sets` and `grpo_lr`. Their run dirs are in `runs/_archive/untrained-im-end/` (and
+`results/runs/_archive/…`), the checkpoints in `models/_archive/untrained-im-end/`, and the W&B runs
+carry the tag `invalid-untrained-im-end`. The cold baselines and scripted policies are unaffected:
+the instruct models' `<|im_end|>` is trained, and the base models were reported as not following the
+format anyway.
+
+The fix (2010aea): before SFT, if `<|im_end|>` is undertrained, copy the `<|endoftext|>` row into it,
+since that's the token the base model already uses to stop. Starting it at the mean embedding doesn't
+work, because the mean has an even smaller norm (0.29). Eval and rollouts now also log `stopped`, the
+share of replies that end on the stop token, so this can't hide behind `parse` again.
 
 ## 2026-11-13 · `grpo_easy_sets`: first GRPO comparison across feedback modes
+
+**Invalid**, see 2026-11-14: the warm start never learned to stop, so these numbers are off.
 
 GRPO from the 0.25 warm start (`sft-qwen3-0.6b`) on `distinct` + `ineq` (m ∈ {1, 2}, slack 0 or 1),
 one run per feedback mode and seed, 300 steps of 128 episodes, lr 1e-6 decaying linearly to 0, `beta` 0.
@@ -59,6 +82,8 @@ policy. Final eval, success in % averaged over the two (m, H) cells, seed 0 / se
 
 ## 2026-11-13 · Oracle share in the SFT warm start
 
+**Invalid**, see 2026-11-14: the warm start never learned to stop, so these numbers are off.
+
 Same recipe as the 11-10 warm start, but with 0.5 and 1.0 of the demo games played by the oracle
 instead of 0.25. The question was whether stronger demos give `spec` a GRPO signal without teaching
 reliance on the feedback line. Same eval as before. W&B tag `oracle-sweep`, SFT
@@ -91,6 +116,8 @@ reliant. Keep 0.25 (which `grpo_easy_sets` already uses), and if `spec` needs a 
 curriculum rather than from the demos.
 
 ## 2026-11-10 · SFT warm start for Qwen3-0.6B-Base
+
+**Invalid**, see 2026-11-14: the warm start never learned to stop, so these numbers are off.
 
 One epoch on 4000 scripted games (25% played by the oracle, the rest random valid edits, modes split
 evenly over none / true / noise / residual), loss on reply tokens only. Then the same eval as the
