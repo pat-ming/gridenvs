@@ -5,9 +5,25 @@ in `results/runs/`, and everything is also in W&B (project `fbrl`).
 
 ## In flight
 
-As of 2026-11-13 16:15. Nothing running.
+As of 2026-11-14 12:55. The hold is lifted for this sweep only; check before launching anything else.
 
-**Hold:** launch nothing new until Motti says otherwise. Logging and analysis are fine.
+**`grpo_lr`** (array 382169): does GRPO learn at all with a bigger step? `grpo_easy_sets` didn't at
+1e-6 with linear decay. One arm (`none`, seed 0), same setup otherwise, 10 warmup steps. W&B group
+`grpo_lr`, grid in `$FBRL/sweeps/grpo_lr.txt`, config `configs/experiments/grpo_lr.yaml`. About
+1h45m per task, so done around 14:45.
+
+| Task | lr | Schedule |
+|---|---|---|
+| 382169_0 | 3e-6 | constant |
+| 382169_1 | 1e-5 | constant |
+| 382169_2 | 3e-5 | constant |
+| 382169_3 | 1e-5 | cosine |
+
+When done:
+- Does `rollout/success` climb above the about 7% the 1e-6 runs sat at, and does eval `none` success follow?
+- Collapse checks for the high rates (`beta` is 0): entropy, `rollout/parse`, completion length.
+- Constant vs cosine at 1e-5: does the schedule shape matter at this length?
+- If one rate clearly learns, that sets the rate for rerunning the A/C/D comparison with more seeds.
 
 ## 2026-11-13 · `grpo_easy_sets`: first GRPO comparison across feedback modes
 
