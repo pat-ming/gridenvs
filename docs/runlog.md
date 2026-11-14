@@ -5,19 +5,19 @@ in `results/runs/`, and everything is also in W&B (project `fbrl`).
 
 ## In flight
 
-As of 2026-11-14 12:55. The hold is lifted for this sweep only; check before launching anything else.
+As of 2026-11-14 13:05. The hold is lifted for this sweep only; check before launching anything else.
 
-**`grpo_lr`** (array 382169): does GRPO learn at all with a bigger step? `grpo_easy_sets` didn't at
+**`grpo_lr`** (array 382173): does GRPO learn at all with a bigger step? `grpo_easy_sets` didn't at
 1e-6 with linear decay. One arm (`none`, seed 0), same setup otherwise, 10 warmup steps. W&B group
 `grpo_lr`, grid in `$FBRL/sweeps/grpo_lr.txt`, config `configs/experiments/grpo_lr.yaml`. About
-1h45m per task, so done around 14:45.
+1h45m per task, so done around 14:50.
 
 | Task | lr | Schedule |
 |---|---|---|
-| 382169_0 | 3e-6 | constant |
-| 382169_1 | 1e-5 | constant |
-| 382169_2 | 3e-5 | constant |
-| 382169_3 | 1e-5 | cosine |
+| 382173_0 | 3e-6 | constant |
+| 382173_1 | 1e-5 | constant |
+| 382173_2 | 3e-5 | constant |
+| 382173_3 | 1e-5 | cosine |
 
 When done:
 - Does `rollout/success` climb above the about 7% the 1e-6 runs sat at, and does eval `none` success follow?
