@@ -5,19 +5,47 @@ in `results/runs/`, and everything is also in W&B (project `fbrl`).
 
 ## In flight
 
-As of 2026-11-14 14:25. Approved: this sweep, nothing else.
+As of 2026-11-14 16:05. Nothing running. Next step (not yet approved): A/C/D at lr 1e-5 on
+`distinct`/`ineq`, see the entry below.
 
-**`grpo_lr2`** (array 382302, two a40s): does GRPO learn from the fixed warm start? `none` arm, seed 0,
-constant lr with 10 warmup steps, otherwise as `grpo_easy_sets`. W&B group `grpo_lr2`. About 1h45m, so
-done around 16:05.
+## 2026-11-14 · GRPO learns at 1e-5 and collapses at 3e-5
 
-| Task | lr |
-|---|---|
-| 382302_0 | 1e-5 |
-| 382302_1 | 3e-5 |
+`grpo_lr2` (array 382302): two runs on the `none` arm from the fixed warm start, seed 0, constant lr with
+10 warmup steps, 300 steps, otherwise as `grpo_easy_sets`. W&B: [1e-5](https://forge.coreweave.com/wandb/cse-5100-fall-2026/fbrl/runs/v0jure8s),
+[3e-5](https://forge.coreweave.com/wandb/cse-5100-fall-2026/fbrl/runs/06zxcuwu).
 
-When done: does `rollout/success` climb above about 8%, and eval `none` success with it? Does
-`rollout/stopped` stay near 1 and entropy stay well above 0 (no collapse at 3e-5, `beta` is 0)?
+**1e-5 learns, slowly.** Rollout success goes from about 10% in the first 30 steps to about 15% in the
+last 30. The held-out eval moves the same way. Success in %, mean of the last five evals (steps 200–300)
+against step 0:
+
+| | `distinct` none / true | `ineq` none / true |
+|---|---|---|
+| step 0 | 8.6 / 7.8 | 3.5 / 4.3 |
+| steps 200–300 | 16.4 / 14.6 | 6.1 / 5.1 |
+
+Each (set, mode) eval is 256 episodes (128 per m), so one eval has a standard error of about 2 points; the averages are
+steadier than that. The run stays healthy: `stopped` is 1.0 throughout, `parse` is at least 98.5%, and
+reply length stays at about 16 tokens over two turns. Entropy halves (0.66 to 0.32) and `mixed` falls
+from about 50% to 42%, so the policy is sharpening, but by step 300 it still has plenty of signal left
+and the curve hasn't flattened convincingly. `cf_score` stays within ±0.06 of zero.
+
+**3e-5 collapses.** The early climb I saw in W&B didn't last. The model stops ending its replies within
+50 steps (`stopped` 1.0 to 0.45 in steps 25–49, then 0), so every reply runs to the 32-token cap again.
+By step 125 most replies are an `EDIT` followed by a run of `9`s. Entropy falls to about 0.006 by step
+210, `mixed` to 0, and the gradient to 0: every rollout in a group is the same, so there's nothing left
+to learn from. Eval success settles at exactly 20.3% on `distinct` in all three modes, which is one
+fixed edit sequence that happens to solve that share of boards, not a skill.
+
+What I take from it:
+- 1e-5 is the step size to use. It's ten times the `grpo_easy_sets` lr, which didn't learn, and three
+  times below where it falls apart.
+- With `beta` at 0 nothing holds the stop token in place, so at larger steps the model can lose it
+  again. The tail after the `EDIT` carries the same advantage as the edit, so it drifts freely. `stopped`
+  is the first thing to watch on any new run.
+- On the `none` arm, eval `none` ends up a point or two above `true`. That's the direction H1 predicts,
+  but it's one seed of one arm and within noise; it needs the C and D arms to mean anything.
+- Gains are small in absolute terms (`distinct` 16%, `ineq` 6%). Longer runs or more seeds may be worth
+  more than further lr tuning.
 
 ## 2026-11-14 · Warm start with the `<|im_end|>` fix
 
