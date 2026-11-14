@@ -1,0 +1,11 @@
+# Layered on grpo_easy_sets.yaml: one arm, varying the step size, since that sweep didn't learn at 1e-6.
+experiment:
+  name: "grpo_lr{grpo.learning_rate}_{grpo.lr_scheduler_type}_{env.mode}_s{experiment.seed}"
+  notes: "LR sweep on the none arm: lr {grpo.learning_rate}, {grpo.lr_scheduler_type}. Does GRPO learn at all with a larger step?"
+
+env:
+  mode: none
+
+grpo:
+  lr_scheduler_type: constant_with_warmup
+  warmup_steps: 10
