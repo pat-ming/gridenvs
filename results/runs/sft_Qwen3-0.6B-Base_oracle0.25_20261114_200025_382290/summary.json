@@ -1,0 +1,25 @@
+{
+  "episodes": 4000,
+  "demo_success": 0.247,
+  "global_step": 125,
+  "total_flos": 4367351109648384.0,
+  "num_input_tokens_seen": 0,
+  "final_checkpoint": "/engrfs/project/netanel.raviv/motti_k/fbrl/runs/sft_Qwen3-0.6B-Base_oracle0.25_20261114_200025_382290/checkpoints/final",
+  "exported_to": "/engrfs/project/netanel.raviv/motti_k/fbrl/models/sft-qwen3-0.6b",
+  "gpu0_util_mean": 33.1,
+  "gpu0_mem_peak_gb": 7.48,
+  "gpu0_energy_kwh": 0.0207,
+  "name": "sft_Qwen3-0.6B-Base_oracle0.25",
+  "tags": [
+    "sft",
+    "Qwen3-0.6B-Base",
+    "warmstart",
+    "im-end-fix"
+  ],
+  "status": "finished",
+  "elapsed_sec": 613.3,
+  "gpu_hours": 0.1703,
+  "best_metric": null,
+  "best_value": null,
+  "best_step": null
+}

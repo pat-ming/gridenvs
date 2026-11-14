@@ -5,14 +5,42 @@ in `results/runs/`, and everything is also in W&B (project `fbrl`).
 
 ## In flight
 
-As of 2026-11-14 14:07. Approved: the two steps below, nothing else.
+As of 2026-11-14 14:25. Approved: this sweep, nothing else.
 
-1. **Running:** the 0.25 SFT warm start with the `<|im_end|>` fix (job 382290, a6000), exporting to
-   `models/sft-qwen3-0.6b`, then its eval (382291, starts when the SFT finishes). W&B tag `im-end-fix`.
-   About 25 min for both. Gate: eval `stopped` above 0.95 in every cell, with `parse` still about 1.0.
-2. **If it passes:** the LR sweep again from the new warm start, on two GPUs: 1e-5 and 3e-5, constant with
-   10 warmup steps, `none` arm, seed 0 (`configs/experiments/grpo_lr.yaml`). Check `rollout/success`
-   and that `stopped` stays high. If the gate fails, stop and look before spending more GPU time.
+**`grpo_lr2`** (array 382302, two a40s): does GRPO learn from the fixed warm start? `none` arm, seed 0,
+constant lr with 10 warmup steps, otherwise as `grpo_easy_sets`. W&B group `grpo_lr2`. About 1h45m, so
+done around 16:05.
+
+| Task | lr |
+|---|---|
+| 382302_0 | 1e-5 |
+| 382302_1 | 3e-5 |
+
+When done: does `rollout/success` climb above about 8%, and eval `none` success with it? Does
+`rollout/stopped` stay near 1 and entropy stay well above 0 (no collapse at 3e-5, `beta` is 0)?
+
+## 2026-11-14 · Warm start with the `<|im_end|>` fix
+
+Same 0.25 SFT as 11-10, but with `<|im_end|>` started as a copy of `<|endoftext|>` (2010aea), then the
+usual eval. [SFT](https://forge.coreweave.com/wandb/cse-5100-fall-2026/fbrl/runs/ujchhj42), checkpoint in
+`models/sft-qwen3-0.6b` (replacing the broken one). Final train loss 0.70, against 1.47 before.
+
+The replies are clean now: 99.9% of 61,440 eval replies are exactly `EDIT r c v`, against 0.1% before.
+About 60% end on `<|im_end|>` and 40% on `<|endoftext|>`. The two started out identical and SFT didn't
+fully separate them. vLLM stops on both, so `stopped` now counts both (58c0578); the gate I'd set
+(`stopped` > 0.95 on `<|im_end|>` alone) was the wrong test.
+
+Success in %, none / true / residual, averaged over the (m, H) cells, and the best cell's mixed groups:
+
+| | `spec` | `rows` | `ineq` | `distinct` |
+|---|---|---|---|---|
+| success | 0.3 / 0.1 / 0.4 | 0.5 / 0.6 / 0.4 | 5.4 / 4.2 / 4.5 | 9.8 / 9.2 / 9.8 |
+| mixed, best cell | 12% | 11% | 45% | 59% |
+
+- Success is about where the broken warm start was, so the junk wasn't what held success down at the
+  start. It mattered for GRPO, where it diluted the update and sometimes overrode the edit.
+- `distinct` has fewer mixed groups (59% vs 75%), but that's still plenty of signal for GRPO.
+- The line still doesn't help (true vs none within a point everywhere), so no reliance going in.
 
 ## 2026-11-14 · The SFT warm start never learned to stop
 

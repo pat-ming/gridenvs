@@ -1,0 +1,37 @@
+{
+  "created": "2026-11-14T20:11:29.977619+00:00",
+  "host": "a60-2209.engr.wustl.edu",
+  "python": "3.12.16",
+  "argv": [
+    "/engrfs/project/netanel.raviv/motti_k/fbrl/code/src/fbrl/evaluate.py",
+    "--config",
+    "configs/eval.yaml",
+    "--set",
+    "model.name=/engrfs/project/netanel.raviv/motti_k/fbrl/models/sft-qwen3-0.6b",
+    "--set",
+    "tracking.wandb.group=warmstart",
+    "--set",
+    "experiment.tags=[\"eval\", \"{model.name}\", \"warmstart\", \"im-end-fix\"]",
+    "--set",
+    "experiment.notes=Eval of the 0.25 warm start with the <|im_end|> fix: stopped rate, then success and mixed groups as before."
+  ],
+  "cwd": "/engrfs/project/netanel.raviv/motti_k/fbrl/code",
+  "git": "1bd51ba",
+  "slurm": {
+    "job_id": "382291",
+    "job_partition": "general-gpu-long",
+    "job_account": "engr-lab-netanel.raviv",
+    "slurmd_nodename": "a60-2209"
+  },
+  "torch": "2.13.0+cu130",
+  "cuda": "13.0",
+  "gpus": [
+    "NVIDIA RTX A6000"
+  ],
+  "status": "finished",
+  "wandb_id": "z7waahq7",
+  "wandb_url": "https://forge.coreweave.com/wandb/cse-5100-fall-2026/fbrl/runs/z7waahq7",
+  "gpu_hours": 0.10536942687666548,
+  "best_value": null,
+  "best_step": null
+}
