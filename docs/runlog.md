@@ -5,8 +5,26 @@ in `results/runs/`, and everything is also in W&B (project `fbrl`).
 
 ## In flight
 
-As of 2026-11-14 16:05. Nothing running. Next step (not yet approved): A/C/D at lr 1e-5 on
-`distinct`/`ineq`, see the entry below.
+As of 2026-11-14 16:20. Approved: this sweep.
+
+**`grpo_arms`** (array 383467, a40s, two at a time): θ_A / θ_C / θ_D for H1 and H2. GRPO from the fixed
+warm start on `distinct`/`ineq` at lr 1e-5 (constant, 10 warmup steps) for 600 steps, two seeds per arm
+(`configs/experiments/grpo_arms.yaml`). W&B group `grpo_arms`. About 3h15m per run, three waves, so all
+done around 02:00 on 11-15.
+
+| Task | arm | seed |
+|---|---|---|
+| 383467_0 | `none` | 0 |
+| 383467_1 | `true` | 0 |
+| 383467_2 | `noise` | 0 |
+| 383467_3 | `none` | 1 |
+| 383467_4 | `true` | 1 |
+| 383467_5 | `noise` | 1 |
+
+When done: `rollout/stopped` stays at 1 on every run (it's what went first at 3e-5). Then per arm, eval
+`none` success at the end against step 0 and against the other arms (H1: is θ_A's no-line success above
+θ_C's?), and `cf_score` on θ_C (H2: does it go positive?). Two seeds is thin, so look at whether the
+seeds agree before reading anything into a gap.
 
 ## 2026-11-14 · GRPO learns at 1e-5 and collapses at 3e-5
 

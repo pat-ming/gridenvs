@@ -1,0 +1,10 @@
+# Layered on grpo_easy_sets.yaml at the step size from grpo_lr2 (3e-5 collapsed), run longer since 1e-5 hadn't plateaued at 300.
+experiment:
+  name: "grpo_arms_{env.mode}_s{experiment.seed}"
+  notes: "theta_{env.mode}, seed {experiment.seed}: GRPO at lr 1e-5 for 600 steps on distinct + ineq. Does training with the line change no-feedback success (H1) and counterfactual reliance (H2)?"
+
+grpo:
+  max_steps: 600
+  learning_rate: 1.0e-5
+  lr_scheduler_type: constant_with_warmup
+  warmup_steps: 10
