@@ -35,37 +35,41 @@ Details in the 2026-11-24 entry of [runlog.md](runlog.md).
 
 ## The split
 
-**Motti: harder puzzles, Sudoku, bigger models, and native neurons and activations.**
-1. Get a GRPO signal on `spec` / `rows` (the proposal's sets), then run the arms there. Prompt:
-   [prompts/harder.md](prompts/harder.md). Right now the warm start solves under 1% of these, so it
-   needs an easier way in first: a curriculum, more oracle demos, or easier variants of the sets.
-   Variants mean touching Patrick's `src/gridenvs/`, so tell him what changes.
-2. Interp from the neuron and activation side: I(θ) probes (this answers H1), activation patching to
-   find where θ_C reads the line, a Δ_M ablation as the proposal's causal intervention, then
-   neuron-level analysis of the parts patching finds. Prompt: [prompts/neurons.md](prompts/neurons.md).
-3. Sudoku (warm start, then the three arms), and the model-size ladder: 1.7B → 4B → 8B, optionally
-   14B with LoRA as a behavior-only check. Up to 4B, full-weight GRPO fits on one 80 GB GPU. 8B needs
-   the optimizer state split across GPUs, which our pipeline doesn't do yet. Prompt:
+Patrick starts at [prompts/patrick.md](prompts/patrick.md).
+
+**Patrick: environments, and the J-lens.**
+1. Make `spec` / `rows` (the proposal's sets) learnable. The warm start solves under 1%, so GRPO gets no
+   signal. The fix is a ladder of easier variants in `src/gridenvs/` going up to `spec`, measured with
+   `fbrl.evaluate`. Prompt: [prompts/environments.md](prompts/environments.md).
+2. Get Sudoku ready to train. It's already wired into `fbrl` but has never been trained. The open
+   choice is whether constraint indices should be shuffled per instance, which would force the model
+   to look the line up instead of memorizing it.
+3. The J-lens on our trained models. Does the model "say" which constraint is broken before acting,
+   and what does θ_C carry at the line token? Prompt: [prompts/jlens.md](prompts/jlens.md).
+
+Environment work is the fallback if the J-lens turns out not to read well on our task.
+
+**Motti: inside the models, and model size.** The critical path to the proposal's deliverables.
+1. I(θ) probes (this answers H1), activation patching to find where θ_C reads the line, a Δ_M ablation
+   as the causal intervention, then neuron-level analysis of what patching finds. Prompt:
+   [prompts/neurons.md](prompts/neurons.md).
+2. The model-size ladder: 1.7B, then 4B, on `distinct`/`ineq`. Stop there unless something changes
+   with size: past 4B needs multi-GPU training code we don't have. Prompt:
    [prompts/scale.md](prompts/scale.md).
 
-**Patrick: the J-lens, and iterating on it.** The same questions from the readout side:
-- Does the model "say" which constraint is broken before acting, and does θ_A do it more than θ_C?
-- What does θ_C's residual stream carry at the line token?
-- When does that change across checkpoints?
-
-Prompt: [prompts/jlens.md](prompts/jlens.md). As the bigger models come in, the same readouts on
-those.
-
-The two interp sides share one prompt set and model list. The shared notes, the question list and
-who owns what are in [interp.md](interp.md). Each side checks the other: J-lens readouts against
-probes and known V(s), and probes against what the lens says the model represents.
-
-**Claude on the cluster: runs that only need the existing recipe.**
+**Claude on the cluster: runs and groundwork for both.**
+- The shared interp groundwork in [interp.md](interp.md): fixed prompt set, model list, activation
+  cache. Both interp sides start from it.
+- Training runs once a recipe or env exists: the three arms on whatever `spec` rung Patrick finds
+  learnable, Sudoku once it's ready, and each model size.
 - *H3, an unreliable line:* show the true line with probability p and a false one otherwise. Where
   does reliance switch off, and does line-free skill grow as p drops? Needs a mode between `true` and
   `noise`.
 - *Line taken away mid-training:* `env.mode` takes a schedule like `[[0, "true"], [300, none]]`.
 - *More θ_A seeds on `ineq`*, to settle whether θ_C's lead there is a seed effect.
+
+The two interp sides check each other: J-lens readouts against probes and the known V(s), and probes
+against what the lens says the model represents.
 
 **Later or stretch:** the optional-verifier environment E_T; the SFT comparison (actions only,
 diagnosis as input, diagnosis as a target); coding tasks.

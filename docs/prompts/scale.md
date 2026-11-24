@@ -1,4 +1,4 @@
-# Prompt: Sudoku, and bigger models
+# Prompt: bigger models
 
 For Motti. Paste everything below the line into a Claude Code session started in the repo checkout on
 the cluster (`/engrfs/project/netanel.raviv/motti_k/fbrl/code`, branch `training`).
@@ -21,28 +21,13 @@ Read these first:
 - θ_C (trained with the true line) follows a false line about 100% of the time.
 - θ_C repairs as well as θ_A with no line.
 
-I want to know whether that holds in a second environment and as the model grows.
-
-**Sudoku.** It's wired into `fbrl` (`env.name: sudoku`, replies are `WRITE v r c`) but has never been
-trained.
-1. SFT a warm start: `fbrl.train_sft` with `env.name=sudoku` and an export path like
-   `$FBRL/models/sft-qwen3-0.6b-sudoku`.
-2. Check that it logs `init_end_of_reply`: Qwen base models ship an untrained `<|im_end|>`, and without
-   that fix the model never stops.
-3. Eval the warm start. `stopped` and `parse` should both be near 1, with `mixed` of at least about
-   20% on some cell. If `mixed` is too low, lower m first.
-4. Run `none`, `true` and `noise` with the `grpo_kl` recipe, 3 seeds each.
-5. `fbrl.placement` is grid4-only; extend it with `edited_cell("sudoku", ...)`.
-
-Sudoku's constraint indices are fixed: rows 0–8, columns 9–17, boxes 18–26. That makes it like
-`distinct`, where θ_C learned "violated: {3}" means column 3 without reading the constraint list.
-Shuffling indices per instance would force a real lookup. That's an env change, so check with Patrick.
+I want to know whether that holds as the model grows.
 
 **Bigger models.** Go up the ladder one step at a time, and only move on when a step reproduces:
 1. Qwen3-1.7B-Base (`configs/models/qwen3-1.7b.yaml`).
 2. Qwen3-4B-Base.
-3. Qwen3-8B-Base.
-4. Optionally 14B with LoRA, as a behavior-only check.
+3. Stop there unless 1.7B or 4B shows something 0.6B didn't. Going past 4B means new multi-GPU training
+   code (see the memory notes below), which is days of infrastructure work.
 
 At each step:
 - SFT a warm start and check `stopped`/`parse`.
