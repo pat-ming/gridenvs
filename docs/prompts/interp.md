@@ -1,8 +1,14 @@
 # Notes and prompt: inside the trained models
 
-The behavioral results say *what* θ_C does: it edits wherever the line points, and without a line it's
-as good as θ_A. Interp asks *how*. The questions below are ordered so each one is useful on its own,
-and the first two need only a forward pass and a few hundred prompts.
+The behavioral results say *what* θ_C does: it edits wherever the line points, and without a line it
+repairs as well as θ_A. This track covers the proposal's deliverables 3–5:
+- the independent-verification measure I(θ), which H1 is actually about;
+- the reliance measure D(θ);
+- a causal intervention;
+- recoverability.
+
+Each question below is useful on its own. The first three need only forward passes over a few hundred
+prompts.
 
 ## What we have
 
@@ -20,29 +26,45 @@ and the first two need only a forward pass and a few hundred prompts.
 
 ## Questions
 
-1. **Where does θ_C read the line?** Take true/false prompt pairs that differ only in the line's index
-   token, and use the logit difference between the true and the false column's digit at the edit's
-   column position as the metric.
-   - Activation patching, residual stream at the line token per layer, then head outputs, clean into
-     corrupt. Find the layers and heads that carry the index to the answer.
-   - Do the same for θ_A and θ_D. We expect nothing there, which is a check the method works.
-2. **Does the model still work out the broken constraint itself?** Fit a linear probe at the last
-   prompt token for "which column is violated" (4-way on `distinct`), layer by layer, with no line in
-   the prompt. Compare θ_0, θ_A, θ_C, θ_D.
-   - H1 in mechanistic form: does θ_C still compute V(s) internally, or did it stop?
-   - Then put the false line in: does θ_C's internal V get overwritten, or computed and ignored?
-3. **Is θ_C's no-line path the same as θ_A's?** All the models are small fine-tunes of θ_0, so the
+1. **I(θ): does the model work out the broken constraints itself?** This is H1 as the proposal states
+   it.
+   - On line-free states, fit a linear probe per violation bit (one per constraint, from the residual
+     stream at the last prompt token), layer by layer, for θ_0, θ_A, θ_C, θ_D across seeds.
+   - Exact-match accuracy of the decoded set is the probe version of I(θ).
+   - Then put a false line in: does θ_C's internal V get overwritten, or computed and then ignored?
+   - Add a behavioral version too: prompt each model to list the violated constraints. The models
+     were never trained to do this, so expect to need a few-shot prompt and to compare against θ_0.
+2. **D(θ): how much do actions move between a true and a false line?** Compute the total-variation
+   distance between the next-edit distributions from the logits. The edit is three digits (r c v), so
+   either chain them or use the (r, c) marginal. This replaces the sampled `follow_false` with the
+   proposal's measure.
+3. **Where does θ_C read the line?** Take true/false prompt pairs that differ only in the line's index
+   token. The metric is the logit difference between the true and the false column's digit at the
+   edit's column position.
+   - Activation patching: residual stream at the line token per layer, then head outputs, clean into
+     corrupt.
+   - θ_A and θ_D should show nothing, which checks the method.
+   - Then ablate the heads you find and report Δ_M (the drop in repair success on held-out states).
+     Controls: a norm-matched random ablation, and line-free repair, which should be unaffected if the
+     heads are specific to the line.
+4. **Is θ_C's line-free path the same as θ_A's?** All the models are small fine-tunes of θ_0, so the
    residual streams should be comparable.
-   - Train the probe from 2 on θ_A and test it on θ_C.
-   - Patch on no-line prompts, corrupting one grid cell, to find the heads that carry the duplicate to
+   - Train a probe from 1 on θ_A and test it on θ_C.
+   - Patch line-free prompts with one grid cell corrupted, to find which heads carry the duplicate to
      the answer in each model.
-4. **When does it appear?** Run 1 and 2 across checkpoints 100–600 for one θ_C seed. The eval logs
-   already show when following the line switches on behaviorally (`fbrl.placement` on each
-   checkpoint's eval, or the per-step eval records). Does the circuit form at the same time?
-5. **`ineq` lookup.** θ_C follows the line there too, which needs two hops: index → constraint text →
+5. **Recoverability.** Can a classifier on activations (or on behavior) tell which condition trained a
+   model, when trained on some seeds and tested on held-out ones? Seeds are the unit here, so with 4
+   per arm this is leave-one-seed-out.
+6. **When does it appear?** Run 1–3 across checkpoints 100–600 for one θ_C seed, against when
+   following the line switches on in the eval records. Does the circuit form at the same time?
+7. **`ineq` lookup.** θ_C follows the line there too, which needs two hops: index → constraint text →
    cells. Attention from the line's index token to the matching `cN:` line, then on to the cell
    coordinates, would show it.
-6. **Bigger models.** Repeat 1–3 on the 1.7B runs once Track A has them (`docs/next.md`).
+8. **Bigger models.** Repeat 1–4 on the 1.7B runs once Track A has them.
+
+The proposal also mentions the Jacobian lens (github.com/anthropics/jacobian-lens, which has Qwen
+examples) and neuron-level circuit work. Both are worth a try after the probes and patching give us
+known answers to check them against.
 
 ## Practical
 
@@ -62,13 +84,15 @@ I'm starting the mechanistic-interpretability part of our CSE 5100 project. Read
 (the notes above this prompt), `docs/next.md`, and the top two entries of `docs/runlog.md`, then look at
 `src/fbrl/grid.py` for how prompts are built.
 
-Start with question 1 on `distinct` only:
-- Load θ_C seed 0 (`final`) and θ_A seed 0, and build 200 true/false prompt pairs.
-- Check the metric before patching. θ_C's true-minus-false logit difference should be large and
-  positive, and θ_A's near 0. If it isn't, stop and tell me.
-- Then patch layer by layer, then head by head.
+Start with question 1 (I(θ) probes) on `distinct` only. That's what answers H1.
+- Collect last-prompt-token residuals for about 2000 line-free states from θ_0 and seed 0 of θ_A,
+  θ_C and θ_D (`final`).
+- Fit a logistic probe per column bit, per layer, with held-out instances.
+- Sanity check first: the bits should be decodable from θ_0 well above the base rate at some layer. If
+  nothing decodes anywhere, check the setup before reading anything into model differences.
 
-Show me a layer × position heatmap and the top heads before going further. Write analysis code as a
+Show me probe accuracy by layer per model. Then do question 3 (patching) the same way: check that the
+metric separates θ_C from θ_A before patching, then show a layer × position heatmap and the top heads. Write analysis code as a
 small module under `src/fbrl/` (or `interp/`), keep plots and numbers in `results/interp/`, and commit
 as you go. Talk to me in plain prose, say what didn't work, and don't overclaim from one seed: once a
 result looks real, repeat it on a second seed. Ask before submitting any batch jobs.

@@ -12,7 +12,7 @@ stronger KL penalty, as a check that the 0.04 result below doesn't depend on it.
 When done: `python -m fbrl.placement $FBRL/runs/grpo_kl0.1_*` and the eval success by mode; does θ_C
 still follow a false line about 100% of the time, and is no-line success still level across arms?
 
-## 2026-11-24 · grpo_kl: H2 holds on every seed, H1 doesn't
+## 2026-11-24 · grpo_kl: H2 holds on every seed; the line doesn't cost repair skill
 
 `grpo_kl` (array 396792): the `grpo_arms` grid with a KL penalty to the warm start (`beta` 0.04), so
 `none` / `true` / `noise` from the fixed warm start on `distinct`/`ineq`, lr 1e-5, 600 steps, seeds 0–3.
@@ -38,8 +38,10 @@ too this time, where using it means looking the pair up in the constraint list. 
 that carries no information (θ_D) leaves the model ignoring it, so the reliance comes from the line
 being right, not from seeing a line at all.
 
-**H1: no.** We expected training with the line to leave the model worse on its own. With the line taken
-away, θ_C is level with θ_A and θ_D on `distinct` (15.4 against 16.0 and 16.5) and finds the broken
+**Line-free repair: no cost from the line.** (This is not yet H1 as the proposal states it. That's
+independent violation *detection*, I(θ), which needs a probe or a prompt that asks for the violated set;
+see `docs/next.md`.) We expected training with the line to leave the model worse on its own. With the
+line taken away, θ_C is level with θ_A and θ_D on `distinct` (15.4 against 16.0 and 16.5) and finds the broken
 column as often (26% each). On `ineq` it's ahead: 18.2±2.2 against 7.7±4.6 for θ_A. θ_A and θ_D are
 split there: some seeds pick up `ineq` (θ_A s0 13.6, θ_D s0/s2/s3 18–20) and some barely move (3.8–4.3),
 while all four θ_C seeds do (16.5–21.3). A guess at why: with the line θ_C wins about 65% of its training
