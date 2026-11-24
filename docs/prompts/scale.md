@@ -1,0 +1,77 @@
+# Prompt: Sudoku, and bigger models
+
+For Motti. Paste everything below the line into a Claude Code session started in the repo checkout on
+the cluster (`/engrfs/project/netanel.raviv/motti_k/fbrl/code`, branch `training`).
+
+---
+
+I'm working on our CSE 5100 project: GRPO on small constraint-repair puzzles under different feedback
+conditions. The questions:
+- H1: does training without the feedback line build independent violation detection?
+- H2: does training with it build reliance on it?
+
+Read these first:
+- the proposal (`CSE 5100 Project Proposal - Moti & Patrick.tex`);
+- `docs/next.md`;
+- the top three entries of `docs/runlog.md`;
+- `docs/training.md` and `docs/envs.md`.
+
+**Where things stand.** On the easy 4x4 sets (`distinct`, `ineq`) with Qwen3-0.6B-Base, the recipe in
+`configs/experiments/grpo_kl.yaml` trains stably: lr 1e-5, KL `beta` 0.04, 600 steps. Results so far:
+- θ_C (trained with the true line) follows a false line about 100% of the time.
+- θ_C repairs as well as θ_A with no line.
+
+I want to know whether that holds in a second environment and as the model grows.
+
+**Sudoku.** It's wired into `fbrl` (`env.name: sudoku`, replies are `WRITE v r c`) but has never been
+trained.
+1. SFT a warm start: `fbrl.train_sft` with `env.name=sudoku` and an export path like
+   `$FBRL/models/sft-qwen3-0.6b-sudoku`.
+2. Check that it logs `init_end_of_reply`: Qwen base models ship an untrained `<|im_end|>`, and without
+   that fix the model never stops.
+3. Eval the warm start. `stopped` and `parse` should both be near 1, with `mixed` of at least about
+   20% on some cell. If `mixed` is too low, lower m first.
+4. Run `none`, `true` and `noise` with the `grpo_kl` recipe, 3 seeds each.
+5. `fbrl.placement` is grid4-only; extend it with `edited_cell("sudoku", ...)`.
+
+Sudoku's constraint indices are fixed: rows 0–8, columns 9–17, boxes 18–26. That makes it like
+`distinct`, where θ_C learned "violated: {3}" means column 3 without reading the constraint list.
+Shuffling indices per instance would force a real lookup. That's an env change, so check with Patrick.
+
+**Bigger models.** Go up the ladder one step at a time, and only move on when a step reproduces:
+1. Qwen3-1.7B-Base (`configs/models/qwen3-1.7b.yaml`).
+2. Qwen3-4B-Base.
+3. Qwen3-8B-Base.
+4. Optionally 14B with LoRA, as a behavior-only check.
+
+At each step:
+- SFT a warm start and check `stopped`/`parse`.
+- Run `grpo_kl` on `distinct`/`ineq`, 3 seeds per arm.
+- Compare against 0.6B with the same measures.
+
+Expect to retune:
+- lr: try 5e-6 if 1e-5 is unstable.
+- Memory, at each size:
+  - 1.7B: one run per 48 GB GPU, packed two only after checking memory.
+  - 4B: one run per 80 GB A100.
+  - 8B: the optimizer state no longer fits on one GPU (full-weight Adam at 8B is about 130 GB). It
+    needs DeepSpeed ZeRO or FSDP across the 4-GPU a100-sxm4 nodes, which `cluster/job.sbatch` and
+    `fbrl.train_grpo` don't do yet. That's an infrastructure job to scope before launching anything.
+  - LoRA runs behave differently from full fine-tunes, so don't put them in the same comparison
+    without saying so.
+
+**How to judge results.**
+- Eval success by mode (none / true / counterfactual), averaged over the last five evals.
+- `python -m fbrl.placement <run dirs>`, which gives two shares of first edits:
+  - `follow_false`: edits inside the constraint a false line names;
+  - `find_alone`: edits inside a truly violated constraint, with no line.
+- Compare arms over seeds, not single runs.
+
+**How we work.**
+- Ask before submitting GPU jobs, and say how many GPUs and for how long. Keep the number of
+  experiments small and each one aimed at a question. Never run GPU work on the login node.
+- Submitting from inside an interactive job, first run
+  `unset $(env | grep -oE "^(APPTAINER|SINGULARITY)_[A-Z_]*")`.
+- Keep the "## In flight" section at the top of `docs/runlog.md` current, and write a dated entry when
+  results come in. Commit and push.
+- Commit messages are one line. Plain prose, say what didn't work, and don't oversell.

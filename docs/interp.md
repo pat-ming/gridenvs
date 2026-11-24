@@ -74,7 +74,7 @@ Build this once, before either side starts, so both work on the same prompts and
 7. **(Either) `ineq` lookup.** θ_C follows the line there too, which needs two hops: index →
    constraint text → cells. Attention from the line's index token to the matching `cN:` line, then on to the cell
    coordinates, would show it.
-8. **(Both, later) Bigger models.** Repeat 1–4 and 9 on the 1.7B runs once they exist.
+8. **(Both, later) Bigger models.** Repeat 1–4 and 9 on the 1.7B runs once Motti has them (`docs/prompts/scale.md`).
 9. **(Patrick) Does the model "say" the error before it acts?** The proposal's use of the J-lens:
    - Read out the residual stream at the last prompt token on line-free states.
    - Look for words naming the broken row, column or constraint before the model edits.

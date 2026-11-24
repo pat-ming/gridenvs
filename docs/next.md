@@ -35,7 +35,7 @@ Details in the 2026-11-24 entry of [runlog.md](runlog.md).
 
 ## The split
 
-**Motti: harder puzzles, then native neurons and activations.**
+**Motti: harder puzzles, Sudoku, bigger models, and native neurons and activations.**
 1. Get a GRPO signal on `spec` / `rows` (the proposal's sets), then run the arms there. Prompt:
    [prompts/harder.md](prompts/harder.md). Right now the warm start solves under 1% of these, so it
    needs an easier way in first: a curriculum, more oracle demos, or easier variants of the sets.
@@ -43,22 +43,24 @@ Details in the 2026-11-24 entry of [runlog.md](runlog.md).
 2. Interp from the neuron and activation side: I(θ) probes (this answers H1), activation patching to
    find where θ_C reads the line, a Δ_M ablation as the proposal's causal intervention, then
    neuron-level analysis of the parts patching finds. Prompt: [prompts/neurons.md](prompts/neurons.md).
+3. Sudoku (warm start, then the three arms), and the model-size ladder: 1.7B → 4B → 8B, optionally
+   14B with LoRA as a behavior-only check. Up to 4B, full-weight GRPO fits on one 80 GB GPU. 8B needs
+   the optimizer state split across GPUs, which our pipeline doesn't do yet. Prompt:
+   [prompts/scale.md](prompts/scale.md).
 
 **Patrick: the J-lens, and iterating on it.** The same questions from the readout side:
 - Does the model "say" which constraint is broken before acting, and does θ_A do it more than θ_C?
 - What does θ_C's residual stream carry at the line token?
 - When does that change across checkpoints?
 
-Prompt: [prompts/jlens.md](prompts/jlens.md). Optional, since it's his environment: a Sudoku warm
-start, then the three arms there.
+Prompt: [prompts/jlens.md](prompts/jlens.md). As the bigger models come in, the same readouts on
+those.
 
 The two interp sides share one prompt set and model list. The shared notes, the question list and
 who owns what are in [interp.md](interp.md). Each side checks the other: J-lens readouts against
 probes and known V(s), and probes against what the lens says the model represents.
 
 **Claude on the cluster: runs that only need the existing recipe.**
-- *Qwen3-1.7B-Base replication:* SFT warm start, then `grpo_kl` on `distinct`/`ineq`, 3–4 seeds per
-  arm. This gives both interp sides a bigger model.
 - *H3, an unreliable line:* show the true line with probability p and a false one otherwise. Where
   does reliance switch off, and does line-free skill grow as p drops? Needs a mode between `true` and
   `noise`.
