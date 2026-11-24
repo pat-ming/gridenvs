@@ -1,0 +1,172 @@
+\documentclass[11pt]{article}
+\usepackage[margin=0.92in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,booktabs,array,hyperref,microtype,multicol}
+\hypersetup{colorlinks=true,linkcolor=black,citecolor=blue,urlcolor=blue}
+\newtheorem{proposition}{Proposition}
+\newcommand{\V}{\mathcal{V}}
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\TV}{\operatorname{TV}}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.32em}
+\title{Outsourcing or Internalizing Computation?\\[-0.12em]
+\large Mechanistic Effects of Feedback and Verification in RL Post-Training}
+\author{Motti Kelbessa, Patrick Ming}
+\date{October 28, 2026}
+\begin{document}
+\maketitle
+\vspace{-1.1em}
+
+\section{Research Question}
+In multi-step RL, an environment can report a computation's result between actions. When that result is determined by the observable state, the policy could compute it itself or use a verifier such as \texttt{pytest}, a compiler, Lean, or a constraint checker. We ask:
+\begin{quote}
+  When does post-training teach a model to \emph{internalize} a useful computation, when does it teach the model to \emph{rely on external verification}, and how can we causally identify the resulting mechanisms?
+\end{quote}
+
+Notice that internalizing a computation is not always strictly necessary: a model could achieve high performance by primarily relying on tool calls and verifier circuits. However, having the computation internalized can be important for efficiency, robustness, and the ability to anticipate errors before receiving feedback. We want to understand how these capabilities develop during training and how they work together in a hybrid agent.
+
+We begin with a controlled constraint-editing task and measure three outcomes: \textbf{competence} (verification without help), \textbf{reliance} (how behavior depends on supplied feedback), and \textbf{mechanism} (internal computations with a causal role in either outcome).
+
+Prior work has explored tool internalization and adaptive tool use
+\cite{xu2026tinr,li2025adaptive,paglieri2025plan}. We build on this by
+varying access to diagnostic feedback during training, then testing how
+it affects independent verification and which internal mechanisms
+account for those effects.
+
+\section{Controlled RL Environment}
+We start with constraint editing because it lets us compute the correct diagnosis after every action and control whether the model receives it.
+
+Concretely, each instance contains a $4\times4$ integer grid $g$ and constraints $c_{1:K}$ (e.g., row sums, inequalities, all-distinct columns). An agent edits one cell per step, $a_t=(r,c,v)$, over horizon $H$. The only reward in the primary experiment is terminal success: $R=\mathbf{1}[\text{all constraints satisfied}]$. We generate instances by perturbing valid targets so that a solution remains reachable within $H$ moves. Evaluation holds out seeds and constraint compositions.
+
+The diagnostic is the set of violated constraints:
+\begin{equation}
+  f(s)=\V(s)=\{k:c_k\text{ is violated in state }s\},\qquad s=(g,c_{1:K}). \label{eq:verification}
+\end{equation}
+We measure prediction of $f(s)$ separately from task completion, since a policy could find useful edits without computing the full violation set.
+
+\begin{center}
+  \begin{tabular}{@{}lp{0.76\linewidth}@{}}
+    \toprule
+    \textbf{Environment} & \textbf{Observation after each edit} \\
+    \midrule
+    $E_A$ & Updated grid only.\\
+    $E_C$ & Updated grid plus the correct violated-constraint list.\\
+    $E_D$ & Updated grid plus length-matched, uninformative text (control).\\
+    \bottomrule
+  \end{tabular}
+\end{center}
+The conditions share tasks, actions, transitions, horizon, and terminal reward. Since $f(s)$ is computable from $s$, supplying it in $E_C$ can spare the model that computation. We track token counts and compute use because observation lengths differ.
+
+\section{Hypotheses and Measurements}
+Across these conditions, we expect (H1) training without diagnostics to improve independent violation detection, (H2) training with diagnostics to increase feedback reliance, and (H3) independent verification to matter more when tools are costly, unreliable, or unavailable. Competence and reliance can coexist, so we measure both.
+
+\textbf{Independent verification.} On unseen states without diagnostics, we measure exact-match accuracy of the model's predicted violation set $\hat f_\theta(s)$:
+\begin{equation}
+  I(\theta)=\E_{s\sim D_{\mathrm{test}}}\left[\mathbf 1\{\hat f_\theta(s)=f(s)\}\right]. \label{eq:internalization}
+\end{equation}
+We also measure repair success without diagnostics.
+
+\textbf{Reliance on feedback.} We compare actions under true and plausible false diagnostics $\tilde f(s)$:
+\begin{equation}
+  D(\theta)=\E_s\!\left[\TV\!\left(\pi_\theta(\cdot\mid s,f(s)),\,\pi_\theta(\cdot\mid s,\tilde f(s))\right)\right]. \label{eq:dependence}
+\end{equation}
+We report both the action change and its effect on correctness, evaluating all policies with absent, true, misleading, and irrelevant feedback at matched task difficulty.
+
+\textbf{When to use a tool.} In a simple one-shot decision model, suppose an internal checker has accuracy $p_I$ and cost $c_I$, while a tool has accuracy $p_T$ and cost $c_T$. If correctness is worth $B$, the expected utilities are $U_I=Bp_I-c_I$ and $U_T=Bp_T-c_T$. Internal checking is preferable when
+\begin{equation}
+  B(p_I-p_T)>c_I-c_T. \label{eq:threshold}
+\end{equation}
+For a hybrid agent, the decision is whether a diagnostic would improve its next edit enough to justify the call. Let $b$ summarize the bounded agent's beliefs about violations and edit outcomes, $z$ be a tool response, and $b_z$ be its updated beliefs. If $Q(b,a)$ is expected task value for edit $a$, the net value of a call is
+\begin{equation}
+  \operatorname{VOI}(b)=\E_{z\sim p(\cdot\mid b)}\!\left[\max_a Q(b_z,a)\right]-\max_a Q(b,a)-c_T. \label{eq:voi}
+\end{equation}
+Here $p(z\mid b)$ is the agent's predictive distribution over tool responses, and $c_T$ is expressed in task-value units. The beliefs represent uncertainty about a computation whose answer is fixed by the visible state. In this one-step model, a call is worthwhile when $\operatorname{VOI}(b)>0$. We would test whether actual calls track error risk, tool accuracy, latency, and price.
+
+\textbf{Optional-verifier experiment.} We would test these choices in a separate environment $E_T$ that adds a \texttt{check\_constraints()} action. We would vary its cost, availability, and reliability to study when the agent checks internally, calls the tool, or combines both. Always-call and never-call policies provide baselines.
+
+\section{Training and Evaluation Plan}
+To test these predictions, we will pilot with \href{https://huggingface.co/Qwen/Qwen3-0.6B-Base}{Qwen3-0.6B-Base}, then replicate promising effects with \href{https://huggingface.co/Qwen/Qwen3-1.7B-Base}{Qwen3-1.7B-Base}. Their text-only transformer architecture should make the activation patching and circuit analysis below easier to implement.
+
+If time allows, we could also try \href{https://huggingface.co/Qwen/Qwen3.5-2B-Base}{Qwen3.5-2B-Base} as a replication target. Its hybrid architecture and multimodal pretraining would let us test whether the feedback effects persist in a newer model family. However, we expect this to be more challenging due to increased model complexity.
+
+For the mechanistic runs, we will fine-tune all weights so learning can change computations throughout the model. We will use BF16 mixed precision to reduce activation memory compared with FP32, and LoRA for initial pipeline checks.
+
+Once a shared SFT warm start $\theta_{\mathrm{warm}}$ produces valid actions and nonzero reward variation, we train a policy for each condition $X$ and random seed $\xi_j$:
+\begin{equation}
+  \theta_X^{(j)}=\operatorname{GRPO}(\theta_{\mathrm{warm}},E_X;\xi_j),\quad X\in\{A,C,D\},\quad j=1,\ldots,n. \label{eq:training}
+\end{equation}
+We aim for $n\geq3$ independent seeds per condition, with the same instance order, rollout groups, and optimizer settings where feasible.
+
+Evaluating the warm start and intermediate checkpoints on held-out constraints will show how verification and reliance develop under each feedback condition. Where possible, we will compare models at similar task success.
+
+After the RL pilot, we could ask whether teaching a model to produce its own diagnosis improves independent verification. On matched problems, we would compare:
+\begin{enumerate}\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}
+  \item Successful action targets only.
+  \item Verifier diagnostics supplied as \emph{inputs}, followed by action targets.
+  \item Diagnoses generated as \emph{supervised targets} before edits.
+\end{enumerate}
+We would match supervised-token budgets and control trace quality where possible. Gu et al.'s work on interface learning \cite{gu2026trajectory} and Yu et al.'s analysis of reasoning traces \cite{yu2026outcome} motivate two checks: whether gains transfer and whether diagnoses causally affect edits.
+
+\section{Mechanistic Analysis}
+To connect these behavioral results to internal computations, we will probe each constraint-violation bit across layers on \emph{feedback-free} states. Comparisons with the shared warm start and across training seeds will help identify signals that change with training.
+
+Geiger et al.'s causal-abstraction framework \cite{geiger2025causal} and Shi et al.'s feature-level study of RL generalization \cite{shi2026generalize} motivate testing whether the policy uses these signals. We will use within-model activation/path patching and ablation, with norm-matched random interventions and unrelated editing tasks as controls for general disruption.
+
+For a candidate component set $M$, let $S(\theta)$ be repair success on held-out states and $S(\theta;\operatorname{ablate}(M))$ be success after ablation. We measure
+\begin{equation}
+  \Delta_M=S(\theta)-S(\theta;\operatorname{ablate}(M)). \label{eq:intervention}
+\end{equation}
+A positive $\Delta_M$ means the ablation reduces repair success. We select candidate components on a development split and evaluate intervention effects on held-out states.
+
+Two approaches could help us choose candidates for these interventions:
+\begin{itemize}\setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}
+  \item \textbf{Jacobian lens (J-lens).} J-lens maps the residual stream (the shared state updated by each layer) to words the model could report about that state \cite{gurnee2026workspace}. We could use it to look for error signals before tool feedback and compare training conditions. The \href{https://github.com/anthropics/jacobian-lens}{reference implementation includes Qwen examples}, but we have not tested it on our task; its readouts would need checks against known violations and causal interventions.
+
+  \item \textbf{Native neurons and circuits.} Taking some ideas from Cammarata's \emph{Neural Networks Are Already Clean} \cite{cammarata2026clean}, we could study individual neurons and their connections to look for error-checking computations. Gorton and Nanda\footnote{See Liv Gorton's \href{https://livgorton.com/already-clean-thoughts/}{critique} and \href{https://x.com/livgorton/status/2110799624667795624}{earlier thread}, and Neel Nanda's \href{https://x.com/NeelNanda5/status/2110875974296654062}{commentary}.} caution that descriptions of what a neuron detects can fail controlled tests, and neuron-by-neuron analysis can miss signals spread across neurons in superposition.\footnote{Superposition means storing more features (properties or concepts) than there are dimensions in the model's internal state, using overlapping patterns of activity. See \href{https://transformer-circuits.pub/2022/toy_model/index.html}{\emph{Toy Models of Superposition}} and \href{https://distill.pub/2020/circuits/zoom-in/\#claim-2-superposition}{\emph{Zoom In: An Introduction to Circuits}}.} Sparse autoencoders could help separate these mixed signals, but we'll need to check how effectively they isolate causally relevant components.
+\end{itemize}
+
+Our main criterion is \emph{causal specificity}: removing or patching a candidate component should measurably change how the model checks its work or responds to feedback, while leaving unrelated skills largely intact.
+
+\section{Theory and Recoverability}
+The feedback conditions could lead to different learned mechanisms even when their optimal returns agree. To compare achievable returns, let $o_A=s$, $o_C=(s,f(s))$, $\Pi_X$ be the policy class in environment $E_X$, and $J_X(\pi)$ be expected terminal return.
+\begin{proposition}[Redundant diagnostics]
+  If $\Pi_C$ contains the lifted policy $\bar\pi(a\mid s,f(s))=\pi(a\mid s)$ for every $\pi\in\Pi_A$, then
+  \begin{equation}
+    \sup_{\pi_C\in\Pi_C}J_C(\pi_C)\geq\sup_{\pi_A\in\Pi_A}J_A(\pi_A). \label{eq:redundant}
+  \end{equation}
+  If both classes contain all policies and $f$ is deterministic, the optimal values are equal.
+\end{proposition}
+\begin{proof}
+  Every $E_A$ policy has a lifted policy in $E_C$ with the same actions, state transitions, and return. Taking suprema gives the inequality. With unrestricted policies, composing any $E_C$ policy with $s\mapsto(s,f(s))$ reproduces its behavior in $E_A$, giving the reverse inequality.
+\end{proof}
+The proposition leaves open how much training finite models need and which computations they learn.
+
+We also ask whether behavior or activations distinguish training conditions across held-out \emph{training seeds}. Prompts from one run share a model, so seeds are the unit of generalization. Recovery is limited to this experimental family: different environments can produce indistinguishable policies or weights, and counterfactual prompts outside the training support alone cannot identify a unique history \cite{mousavi2026barrier}.
+
+\section{Extensions and Deliverables}
+Beyond the grid, we would also like to know whether the same feedback effects appear in coding agents. We could start with short code-repair tasks, comparing training with and without compiler/test diagnostics. A separate experiment could let the agent choose when to call \texttt{run\_tests()}. In this setting, hidden tests would define final success.
+
+This could similarly extend to Lean proof repair and explanatory proof trajectories, though these would likely need stronger models and more data.
+
+In both settings, our own agent chat histories could suggest error categories or task templates. Using them for training would take more work to reconstruct the runs and verify the recorded actions, tool feedback, and outcomes. We could also look for other trajectory datasets with verifiable tool feedback.
+
+Across these experiments, we can reuse the existing sandbox/agent harness for isolated rollouts, verifier execution, and replay. We'll use Weights \& Biases to track seeds, tokens, compute, checkpoints, rewards, and mechanistic evaluations; and TRL's multi-turn GRPO tooling for training.
+
+\textbf{Core deliverables:} (1) solvable grid generator, diagnostics, and shared warm start; (2) multi-seed RL comparison of $E_A,E_C,E_D$; (3) independent-verification and reliance evaluations; (4) at least one controlled causal intervention; and (5) an analysis of recoverability and its limits. \textbf{Stretch:} optional tool-choice experiment, one SFT comparison, and coding-task replication.
+
+\vspace{-0.35em}
+\begin{multicols}{2}
+\begin{thebibliography}{99}\setlength{\itemsep}{0pt}\footnotesize
+    \bibitem{xu2026tinr} Xu et al. (ACL 2026). \href{https://aclanthology.org/2026.acl-long.2077/}{\emph{TInR: Exploring Tool-Internalized Reasoning in Large Language Models}}.
+    \bibitem{li2025adaptive} Li et al. (ACL 2025). \href{https://aclanthology.org/2025.acl-long.655/}{\emph{Adaptive Tool Use in Large Language Models with Meta-Cognition Trigger}}.
+    \bibitem{paglieri2025plan} Paglieri et al. (2025). \href{https://arxiv.org/abs/2509.03581}{\emph{Learning When to Plan: Efficiently Allocating Test-Time Compute for LLM Agents}}.
+    \bibitem{gu2026trajectory} Gu et al. (ICML 2026). \href{https://proceedings.mlr.press/v306/gu26g.html}{\emph{What Do Agents Learn from Trajectory-SFT: Semantics or Interfaces?}}.
+    \bibitem{yu2026outcome} Yu et al. (ICML 2026). \href{https://proceedings.mlr.press/v306/yu26av.html}{\emph{Outcome Rewards Do Not Guarantee Verifiable or Causally Important Reasoning}}.
+    \bibitem{shi2026generalize} Shi et al. (ACL 2026). \href{https://aclanthology.org/2026.acl-long.1808/}{\emph{Why Does Reinforcement Learning Generalize? A Feature-Level Mechanistic Study}}.
+    \bibitem{geiger2025causal} Geiger et al. (JMLR 2025). \href{https://www.jmlr.org/beta/papers/v26/23-0058.html}{\emph{Causal Abstraction: A Theoretical Foundation for Mechanistic Interpretability}}.
+    \bibitem{mousavi2026barrier} Mousavi-Hosseini and Erdogdu (ICML 2026). \href{https://proceedings.mlr.press/v306/mousavi-hosseini26a.html}{\emph{Post-Training with Policy Gradients: Optimality and the Base Model Barrier}}.
+    \bibitem{gurnee2026workspace} Gurnee et al. (2026). \href{https://transformer-circuits.pub/2026/workspace/index.html}{\emph{Verbalizable Representations Form a Global Workspace in Language Models}}.
+    \bibitem{cammarata2026clean} Cammarata (Goodfire 2026). \href{https://already-clean.goodfire.com/}{\emph{Neural Networks Are Already Clean}}.
+    \bibitem{trlgrpo} Hugging Face TRL documentation. \href{https://huggingface.co/docs/trl/grpo_trainer}{\emph{GRPO Trainer}}.
+  \end{thebibliography}
+\end{multicols}
+\end{document}
