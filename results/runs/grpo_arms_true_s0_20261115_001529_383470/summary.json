@@ -1,0 +1,21 @@
+{
+  "global_step": 600,
+  "total_flos": 0.0,
+  "num_input_tokens_seen": 16819430,
+  "gpu0_util_mean": 45.1,
+  "gpu0_mem_peak_gb": 20.41,
+  "gpu0_energy_kwh": 0.6193,
+  "name": "grpo_arms_true_s0",
+  "tags": [
+    "grpo",
+    "sft-qwen3-0.6b",
+    "mode-true",
+    "distinct-ineq"
+  ],
+  "status": "finished",
+  "elapsed_sec": 11217.0,
+  "gpu_hours": 3.1158,
+  "best_metric": null,
+  "best_value": null,
+  "best_step": null
+}

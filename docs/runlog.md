@@ -5,26 +5,46 @@ in `results/runs/`, and everything is also in W&B (project `fbrl`).
 
 ## In flight
 
-As of 2026-11-14 16:20. Approved: this sweep.
+As of 2026-11-23. Nothing running. Proposed (not approved): rerun `true` s1 and `noise` s1 with a KL
+penalty (`beta` 0.04) to see whether it keeps 600 steps stable, see below.
 
-**`grpo_arms`** (array 383467, a40s, two at a time): θ_A / θ_C / θ_D for H1 and H2. GRPO from the fixed
-warm start on `distinct`/`ineq` at lr 1e-5 (constant, 10 warmup steps) for 600 steps, two seeds per arm
-(`configs/experiments/grpo_arms.yaml`). W&B group `grpo_arms`. About 3h15m per run, three waves, so all
-done around 02:00 on 11-15.
+## 2026-11-23 · grpo_arms: a first H2 signal, no H1 signal, and half the runs broke
 
-| Task | arm | seed |
-|---|---|---|
-| 383467_0 | `none` | 0 |
-| 383467_1 | `true` | 0 |
-| 383467_2 | `noise` | 0 |
-| 383467_3 | `none` | 1 |
-| 383467_4 | `true` | 1 |
-| 383467_5 | `noise` | 1 |
+`grpo_arms` (array 383467, finished 11-15): A / C / D (`none`, `true`, `noise`) from the fixed warm start
+on `distinct`/`ineq`, lr 1e-5 constant, `beta` 0, 600 steps, seeds 0 and 1. W&B: none
+[s0](https://forge.coreweave.com/wandb/cse-5100-fall-2026/fbrl/runs/kx73lqk2) [s1](https://forge.coreweave.com/wandb/cse-5100-fall-2026/fbrl/runs/o2lrucpy), true [s0](https://forge.coreweave.com/wandb/cse-5100-fall-2026/fbrl/runs/pmryd7rp) [s1](https://forge.coreweave.com/wandb/cse-5100-fall-2026/fbrl/runs/ouf1ecbd), noise
+[s0](https://forge.coreweave.com/wandb/cse-5100-fall-2026/fbrl/runs/wtpo99z3) [s1](https://forge.coreweave.com/wandb/cse-5100-fall-2026/fbrl/runs/w4w3jt7d).
 
-When done: `rollout/stopped` stays at 1 on every run (it's what went first at 3e-5). Then per arm, eval
-`none` success at the end against step 0 and against the other arms (H1: is θ_A's no-line success above
-θ_C's?), and `cf_score` on θ_C (H2: does it go positive?). Two seeds is thin, so look at whether the
-seeds agree before reading anything into a gap.
+Eval success in %, mean of the last five evals (steps 500–600), eval modes none / true / counterfactual,
+and `cf_score`. Step 0 for every run is `distinct` 8.6 / 7.8 / 8.2, `ineq` 3.5 / 4.3 / 3.1.
+
+| run | state at the end | `distinct` | cf | `ineq` | cf |
+|---|---|---|---|---|---|
+| none s0 | healthy | 14.9 / 15.8 / 16.0 | −0.00 | 17.0 / 17.0 / 18.7 | +0.01 |
+| none s1 | healthy | 19.1 / 18.5 / 18.6 | −0.02 | 21.6 / 19.3 / 19.7 | −0.00 |
+| true s0 | healthy (lost the stop token at steps 100–300, got it back) | 15.7 / **44.4** / **4.3** | **+0.63** | 22.7 / 24.6 / 20.3 | −0.01 |
+| true s1 | gibberish from about step 120 | 1.5 / 1.3 / 1.1 | | 0.2 / 0.3 / 0.2 | |
+| noise s0 | healthy to step 540 (25% train success), then gibberish | 9.3 / 10.5 / 10.2 | | 9.5 / 9.3 / 9.8 | |
+| noise s1 | lost the stop token at step 200, never got it back | 14.0 / 14.0 / 16.8 | −0.03 | 3.0 / 4.0 / 4.1 | +0.03 |
+
+**H2 has its first signal.** θ_C seed 0 solves 44% of `distinct` boards with the true line, 16% with no
+line, and 4% with a false one. That's a model that reads the line and acts on it, including when the
+line is wrong, which is exactly what `cf_score` was built to catch (+0.63, against about 0 for every
+other run). It's one seed, and only on `distinct`; on `ineq` the same model ignores the line.
+
+**H1 has no signal yet.** On the no-line eval, θ_A (15–22%) and the one usable θ_C (16–23%) end up in
+the same place. So far training with the line didn't cost the model anything when the line is taken
+away, and it didn't help either.
+
+**The real problem is stability.** Three of six runs broke, in two ways:
+- *Losing the stop token* (true s0 for a while, noise s1 for good), the same drift as 3e-5 in
+  `grpo_lr2`, just slower.
+- *Falling into gibberish* (true s1, noise s0): entropy jumps from about 0.2 to 3, replies become random
+  tokens, nothing parses, every reward is 0, so the gradient is 0 and the run can never recover.
+
+Both come from nothing anchoring the policy: `beta` is 0, so there's no pull back toward the warm start.
+A KL penalty to the warm start (`beta` 0.04 is the usual default) is the standard fix and the first
+thing to try. With half the runs unusable we can't compare arms at all, so this comes before more seeds.
 
 ## 2026-11-14 · GRPO learns at 1e-5 and collapses at 3e-5
 
