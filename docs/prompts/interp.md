@@ -81,7 +81,7 @@ Paste everything below the line into a Claude Code session started in the repo c
 ---
 
 I'm starting the mechanistic-interpretability part of our CSE 5100 project. Read `docs/prompts/interp.md`
-(the notes above this prompt), `docs/next.md`, and the top two entries of `docs/runlog.md`, then look at
+(the notes above this prompt), the proposal tex in the repo root (§3 and §5), `docs/next.md`, and the top two entries of `docs/runlog.md`, then look at
 `src/fbrl/grid.py` for how prompts are built.
 
 Start with question 1 (I(θ) probes) on `distinct` only. That's what answers H1.
