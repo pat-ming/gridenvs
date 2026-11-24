@@ -5,7 +5,7 @@ in `results/runs/`, and everything is also in W&B (project `fbrl`).
 
 ## In flight
 
-As of 2026-11-24 12:00.
+As of 2026-11-24 12:30.
 
 - **1.7B warm start** (`sft17` 397196 done, `eval17` 397197 running): same SFT recipe as 0.6B, exported to
   `$FBRL/models/sft-qwen3-1.7b`. It logged `init_end_of_reply`, and its final loss was 0.70 (1.79 at
@@ -14,6 +14,16 @@ As of 2026-11-24 12:00.
 - **Interp groundwork** (`acts` 397205): last-prompt-token residuals for θ_0, the base model, and
   `grpo_kl0.04` θ_A/θ_C/θ_D seeds 0–1, plus `grpo_kl0.1` θ_D s1, on `distinct`/`ineq` in modes none,
   true and counterfactual, 2000 prompts each. Written to `$FBRL/interp/<model>/<set>_<mode>.pt`.
+- **1.7B GRPO, measuring run** (`grpo17` 397233_0): θ_A seed 0 at 1.7B with the `grpo_kl` recipe,
+  `vllm_gpu_memory_utilization` 0.25, alone on a GPU. Check its peak memory and seconds per step, then
+  pack the other 8 lines of `$FBRL/sweeps/grpo17.txt` (3 arms × 3 seeds) two per GPU if they fit.
+  W&B group `grpo17`.
+- **More 0.6B seeds** (`grpo_kl_more` 397231, 4 GPUs, two runs each): θ_A and θ_D at `beta` 0.04,
+  seeds 4–7, in W&B group `grpo_kl`. Two questions: is θ_C's `ineq` lead over θ_A real, and does
+  another θ_D learn to find the column itself?
+- **Line removed halfway** (`grpo_drop` 397232, 2 GPUs): the true line for steps 0–299, then none,
+  seeds 0–3 (`configs/experiments/grpo_drop.yaml`), W&B group `grpo_drop`. Question: does following a
+  false line fade after step 300? Look at `fbrl.placement` and eval success by mode over steps.
 - **I(θ) probes** (397206–397208, start after `acts`): `fbrl.probe` on `distinct` none, `ineq` none,
   and `distinct` counterfactual, each with a shuffled-label control. Output goes to
   `results/interp/probe_<set>_<mode>.json`. When done, ask:

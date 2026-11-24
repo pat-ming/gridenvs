@@ -1,0 +1,7 @@
+# Layered on grpo_kl.yaml: the true line for the first half, then none. Does reliance fade once the line is gone?
+experiment:
+  name: "grpo_drop300_kl{grpo.beta}_s{experiment.seed}"
+  notes: "theta_C then theta_A: true line for steps 0-299, no line for 300-599, KL beta {grpo.beta}, seed {experiment.seed}. Does following a false line fade after the line is removed?"
+
+env:
+  mode: [[0, "true"], [300, none]]
