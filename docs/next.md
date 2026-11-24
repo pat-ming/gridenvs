@@ -35,7 +35,7 @@ Details in the 2026-11-24 entry of [runlog.md](runlog.md).
 
 ## The split
 
-Patrick starts at [prompts/patrick.md](prompts/patrick.md).
+Starter prompt for the J-lens and environments track: [prompts/jlens-and-harder-envs.md](prompts/jlens-and-harder-envs.md).
 
 **Patrick: environments, and the J-lens.**
 1. Make `spec` / `rows` (the proposal's sets) learnable. The warm start solves under 1%, so GRPO gets no

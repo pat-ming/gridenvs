@@ -1,6 +1,6 @@
 # Prompt: harder puzzles and Sudoku, the environment side
 
-For Patrick. Paste everything below the line into a Claude Code session started in the repo checkout
+Paste everything below the line into a Claude Code session started in the repo checkout
 (branch `training`).
 
 ---

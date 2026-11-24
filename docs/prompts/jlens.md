@@ -1,6 +1,6 @@
 # Prompt: the Jacobian lens on our trained models
 
-For Patrick. Paste everything below the line into a Claude Code session started in the repo checkout
+Paste everything below the line into a Claude Code session started in the repo checkout
 (on the cluster, where the checkpoints are).
 
 ---
