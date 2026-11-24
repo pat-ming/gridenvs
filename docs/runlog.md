@@ -5,7 +5,7 @@ in `results/runs/`, and everything is also in W&B (project `fbrl`).
 
 ## In flight
 
-As of 2026-11-24 14:40.
+As of 2026-11-24 15:30.
 
 - **1.7B warm start** (done): `$FBRL/models/sft-qwen3-1.7b` passes the gate. On `distinct`, success is
   about 10% and `mixed` about 0.6; on `ineq`, success is about 5% and `mixed` about 0.4. `stopped` and
@@ -23,13 +23,49 @@ As of 2026-11-24 14:40.
 - **Line removed halfway** (`grpo_drop` 397232, 2 GPUs): the true line for steps 0–299, then none,
   seeds 0–3 (`configs/experiments/grpo_drop.yaml`), W&B group `grpo_drop`. Question: does following a
   false line fade after step 300? Look at `fbrl.placement` and eval success by mode over steps.
-- **I(θ) probes** (CPU, in the session job; the GPU jobs were cancelled when `acts` timed out):
-  - `fbrl.probe` on `distinct` none (all 9 models), then `ineq` none (8 models), each with a
-    shuffled-label control. Output goes to `results/interp/probe_<set>_none.json`.
-  - When done, ask:
-    - Does any model decode V(s) above the control?
-    - Is θ_D s1 the strongest?
-    - How does θ_A compare with θ_C?
+
+## 2026-11-24 · Probes for V(s): only the θ_D that learned to find the column carries it
+
+**Setup.** I fit a logistic probe for each constraint bit at each layer, on the residual at the last
+prompt token (the position where the model starts its first reply).
+- Data: 2000 line-free held-out states per set.
+- Split: 60/20/20 by instance, with L2 picked on validation and test scores reported.
+- Control: the same pipeline fit on V shuffled across instances.
+- Output: `results/interp/probe_{distinct,ineq}_none.json`.
+- Code: `fbrl.acts` caches the residuals, and `fbrl.probe` fits the probes.
+
+**Results.** Best layer per model, balanced accuracy per bit, then exact match of the decoded set.
+The shuffled control sits at 0.52–0.55 everywhere.
+
+| model | `distinct` bal acc | `distinct` exact | `ineq` bal acc |
+|---|---|---|---|
+| base (pre-SFT) | 0.73 (L16) | 0.31 | 0.52 |
+| θ_0 | 0.66 (L10) | 0.29 | 0.53 |
+| θ_A s0 / s1 | 0.68 / 0.68 | 0.31 / 0.30 | 0.52 / 0.52 |
+| θ_C s0 / s1 | 0.68 / 0.74 | 0.27 / 0.38 | 0.53 / 0.53 |
+| θ_D s0 / s1 | 0.70 / 0.66 | 0.28 / 0.32 | 0.53 / 0.52 |
+| θ_D s1, `beta` 0.1 | **0.99** (L19) | **0.97** | not cached |
+
+**What it means.**
+- θ_D s1 at `beta` 0.1, the one model whose edits go to the broken column, also carries the broken
+  column linearly in its residual: 0.99 from about layer 16 on. It is at 0.69 at layer 12 and jumps
+  to 0.94 at layer 16. So whatever computes the check sits around layers 12–16, which is where to
+  patch.
+- Every other model sits at 0.62–0.74 on `distinct`, already at layer 4, and flat after that. That
+  looks like a shallow cue in the board text, not a computed check. No training arm moves it.
+  - θ_A is not above θ_C, so on this measure H1 (training without the line builds independent
+    detection) is not supported at 0.6B with two seeds.
+  - The base model is slightly above θ_0, so SFT didn't add it either.
+- On `ineq`, nothing decodes anywhere, for any model. That matches behavior: no model finds `ineq`
+  violations on its own.
+
+**Caveats.** Two seeds per arm, only the last prompt token, and linear probes only. Behavior and the
+probe agree on θ_D s1, which suggests the probe would catch the check if it were there.
+
+**Next.**
+- Patch θ_D s1 at layers 12–16 to find what computes the check.
+- Check whether any of the new `grpo_kl_more` θ_A/θ_D seeds learn the column. If one does, probe it
+  too: that would tell us whether it's a seed lottery or tied to the noise line.
 
 ## 2026-11-24 · grpo_kl at `beta` 0.1: same picture, and one θ_D that learned `distinct`
 
