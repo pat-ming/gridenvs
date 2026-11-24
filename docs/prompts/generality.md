@@ -6,8 +6,8 @@ Paste everything below the line into a Claude Code session started in the repo c
 ---
 
 I'm working on our CSE 5100 project: GRPO on small constraint-repair puzzles under different feedback
-conditions, to see whether a model trained with a feedback line comes to rely on it (H2) and whether that
-costs it its own skill (H1). Read the proposal (`CSE 5100 Project Proposal - Moti & Patrick.tex`), `docs/next.md`, then the top three entries of `docs/runlog.md`, then
+conditions: does training without the feedback line build independent violation detection (H1), and does
+training with it build reliance on it (H2)? Read the proposal (`CSE 5100 Project Proposal - Moti & Patrick.tex`), `docs/next.md`, then the top three entries of `docs/runlog.md`, then
 `docs/training.md` and `docs/envs.md`. Together they say what's been done, the recipe that works, and
 the mistakes we've already made.
 
