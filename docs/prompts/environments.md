@@ -21,6 +21,23 @@ Read these first:
 with no line. We now need the same comparison where the line saves the model real work, and in a
 second environment. Both need environment changes first.
 
+**What the 4x4 runs taught us** (details in `docs/runlog.md`; W&B group `grpo_kl`):
+- **Recipe that trains stably:** `configs/experiments/grpo_kl.yaml` on top of `grpo_easy_sets.yaml`.
+  That's lr 1e-5 constant with 10 warmup steps, KL `beta` 0.04, 600 steps, and 8 generations per
+  prompt.
+- **Too high a learning rate breaks training:** 3e-5 collapsed within 50 steps. 1e-6 learned nothing.
+- **The KL penalty matters:** with `beta` 0, 3 of 6 runs broke. Some lost the stop token and ran on to
+  the length cap; others fell into gibberish and never recovered. With 0.04, all 12 were stable.
+- **What to watch on any new run:**
+  - `rollout/stopped` should stay near 1 and entropy shouldn't climb. Both problems showed up there
+    first, while `parse` still looked fine.
+  - `mixed` (the share of instances whose samples disagree) is the learning signal. Sets the warm
+    start solves under about 1% of the time have almost none.
+- **New warm starts:** Qwen base models ship an untrained `<|im_end|>`. `fbrl.train_sft` fixes it; check
+  that the run logs `init_end_of_reply`.
+- **Fixed constraint numbers get memorized:** on `distinct`, "violated: {3}" always means column 3, and
+  the model learned that mapping without reading the constraint list.
+
 **1. Make `spec` / `rows` learnable.** These are the proposal's sets. Their sum constraints mean the
 line (and `residual` mode, which adds how far each sum is off) saves arithmetic. The problem: the SFT
 warm start solves under 1% of them, so GRPO gets no signal.

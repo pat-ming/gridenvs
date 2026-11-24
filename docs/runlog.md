@@ -5,12 +5,33 @@ in `results/runs/`, and everything is also in W&B (project `fbrl`).
 
 ## In flight
 
-As of 2026-11-24 03:45. Approved: this sweep.
+As of 2026-11-24 10:30. Nothing running.
 
-**`grpo_kl` `beta` 0.1** (array 396792 tasks 6–8, two runs per GPU): the three arms × seeds 0–1 with a
-stronger KL penalty, as a check that the 0.04 result below doesn't depend on it. Done around 07:30.
-When done: `python -m fbrl.placement $FBRL/runs/grpo_kl0.1_*` and the eval success by mode; does θ_C
-still follow a false line about 100% of the time, and is no-line success still level across arms?
+## 2026-11-24 · grpo_kl at `beta` 0.1: same picture, and one θ_D that learned `distinct`
+
+The backup half of `grpo_kl` (array 396792 tasks 6–8): the three arms × seeds 0–1 at KL `beta` 0.1
+instead of 0.04, otherwise identical. W&B (group `grpo_kl`): none [s0](https://forge.coreweave.com/wandb/cse-5100-fall-2026/fbrl/runs/6tsyqbcd) [s1](https://forge.coreweave.com/wandb/cse-5100-fall-2026/fbrl/runs/9wm71r93); true [s0](https://forge.coreweave.com/wandb/cse-5100-fall-2026/fbrl/runs/2nt89qnl) [s1](https://forge.coreweave.com/wandb/cse-5100-fall-2026/fbrl/runs/sir3n2hk); noise [s0](https://forge.coreweave.com/wandb/cse-5100-fall-2026/fbrl/runs/ivbznba9) [s1](https://forge.coreweave.com/wandb/cse-5100-fall-2026/fbrl/runs/2ins664k).
+
+All six stable (`stopped` 1.00 throughout, entropy never above 0.73). Same layout as the entry below:
+success in % over the last five evals, then `follow` / `find` at step 600.
+
+| run | `distinct` no / true / false | follow | find | `ineq` no / true / false | follow | find |
+|---|---|---|---|---|---|---|
+| none s0 | 15.5 / 15.9 / 14.3 | 31 | 27 | 3.4 / 3.6 / 3.1 | 18 | 16 |
+| none s1 | 12.5 / 12.5 / 12.8 | 28 | 27 | 3.8 / 3.7 / 3.6 | 16 | 15 |
+| true s0 | 18.4 / 62.9 / 0.0 | 99 | 30 | 15.5 / 77.1 / 6.9 | 99 | 29 |
+| true s1 | 14.9 / 60.4 / 0.0 | 98 | 28 | 11.6 / 62.7 / 8.6 | 63 | 18 |
+| noise s0 | 14.2 / 13.9 / 13.9 | 31 | 27 | 3.4 / 3.8 / 3.8 | 18 | 17 |
+| noise s1 | **43.3 / 40.8 / 41.6** | 7 | **97** | 4.1 / 4.3 / 4.1 | 17 | 17 |
+
+- The stronger penalty doesn't change H2: θ_C follows a false line about 99% of the time on `distinct`.
+  On `ineq` one seed follows it 63% of the time, so a stronger anchor may soften reliance there.
+- **θ_D seed 1 learned to find the broken column on its own.** 97% of its line-free first edits land
+  in the violated column, against 25–30% for every other model in either sweep, and it solves 43% of
+  `distinct` boards in every mode. It also ignores a false line (7% of edits there). It's the only
+  model in 18 that internalized the check, so it's one run, not a result. But it's the clearest case
+  we have of what H1 is about, and the first model to look inside alongside θ_C.
+- `ineq` stayed hard for θ_A and θ_D here (3–4%), like the weaker seeds at 0.04.
 
 ## 2026-11-24 · grpo_kl: H2 holds on every seed; the line doesn't cost repair skill
 

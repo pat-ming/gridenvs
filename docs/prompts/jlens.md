@@ -35,6 +35,8 @@ The work, in order:
 2. **Question 9 on `distinct`.** At the last prompt token, on line-free states, does the readout
    name the broken column or a duplicate value?
    - Compare θ_0 against `final` of θ_A, θ_C and θ_D at seed 0.
+   - Also run θ_D seed 1 from `grpo_kl0.1`, the one model that learned to find the broken column on
+     its own. If the lens reads anything about violations, it should be there.
    - Then put the line in, true and false: at θ_C's line token, does the readout carry the line's
      index, and does it change the readout at the last token?
 3. **Check the readouts against known answers.** V(s) is known for every state, and Motti's probes

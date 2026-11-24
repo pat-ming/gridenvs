@@ -20,6 +20,8 @@ Read these first:
    small module under `src/fbrl/`, and tell Patrick it's there.
 2. **Question 1, I(θ) probes, on `distinct` only.** This is what answers H1.
    - Use about 2000 line-free states from θ_0, and seed 0 (`final`) of θ_A, θ_C and θ_D.
+   - Add θ_D seed 1 from `grpo_kl0.1` as a positive control: its edits show it finds the broken
+     column itself, so a probe should decode V(s) from it if it decodes from anything.
    - Fit a logistic probe per column bit, per layer, with held-out instances.
    - Sanity check: the bits should be decodable from θ_0 well above the base rate at some layer. If
      nothing decodes anywhere, check the setup before reading anything into model differences.

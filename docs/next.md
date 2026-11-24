@@ -74,6 +74,37 @@ against what the lens says the model represents.
 **Later or stretch:** the optional-verifier environment E_T; the SFT comparison (actions only,
 diagnosis as input, diagnosis as a target); coding tasks.
 
+## Where the results live
+
+- **W&B:** project [fbrl](https://forge.coreweave.com/wandb/cse-5100-fall-2026/fbrl) in team
+  `cse-5100-fall-2026`. Filter by group:
+
+  | Group | What it is |
+  |---|---|
+  | `grpo_kl` | the main result: 18 runs, `beta` 0.04 (4 seeds per arm) and 0.1 (2 seeds) |
+  | `grpo_arms` | the same at `beta` 0; 3 of 6 broke |
+  | `grpo_lr2` | the learning-rate check |
+
+  Runs tagged `invalid-untrained-im-end` predate the stop-token fix; ignore them. Each run log entry
+  links its runs individually.
+- **In the repo** (`results/runs/<run>/`), for every run:
+  - `config.yaml`: the full resolved config;
+  - `events.jsonl`: every logged metric per step;
+  - `records/eval_cells.jsonl`: the eval per cell per step;
+  - `summary.json` and `meta.json`.
+  
+  That's enough to redo any table in the run log except the edit-placement columns.
+- **On the cluster only** (`$FBRL/runs/<run>/`, readable by anyone on the cluster), because they're too
+  big for git:
+  - `checkpoints/` (about 22 GB a run);
+  - `records/eval_episodes.jsonl`, every eval episode, which `fbrl.placement` reads (about 11 MB a run);
+  - `records/rollouts.jsonl`, every training rollout.
+
+  W&B also has rollout tables every 25 steps.
+- **Models worth looking inside first:** θ_C and θ_A at seed 0 of `grpo_kl0.04`, and θ_D seed 1 of
+  `grpo_kl0.1`. That θ_D is the only model that learned to find the broken column on its own (see the
+  run log).
+
 ## Practical notes for anyone starting
 
 - Checkpoints: `$FBRL/runs/grpo_kl0.04_<arm>_s<seed>_*/checkpoints/checkpoint-{100..600}` and `final`.
