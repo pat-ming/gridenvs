@@ -17,6 +17,8 @@ As of 2026-11-24 15:30.
     600 steps.
   - The other 8 runs (397269, `$FBRL/sweeps/grpo17_rest.txt`) run two per 80 GB A100 with
     `vllm_gpu_memory_utilization` 0.15, on 4 GPUs with a 12h limit.
+  - At 15:40 I cancelled the measuring run at step 99 to free a GPU, so θ_A s0 needs a rerun. 397269
+    and `grpo_drop` 397232_1 are on hold (`scontrol release` when GPUs are free).
 - **More 0.6B seeds** (`grpo_kl_more` 397231, 4 GPUs, two runs each): θ_A and θ_D at `beta` 0.04,
   seeds 4–7, in W&B group `grpo_kl`. Two questions: is θ_C's `ineq` lead over θ_A real, and does
   another θ_D learn to find the column itself?
