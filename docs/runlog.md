@@ -22,6 +22,18 @@ on the stable `beta` 0.04 runs:
 - H1: no-line success, and share of no-line edits that land in a broken constraint, θ_A against θ_C.
   For grpo_arms seed 0/1 this was 34% for θ_A against 19% for θ_C on `distinct`.
 
+**Halfway check (11-24 00:40, steps 200–320):** all 12 `beta` 0.04 runs are stable (`stopped` never
+below 1.00, entropy never above 0.72). Latest eval, success in % with no line / true line / false line:
+
+| arm | `distinct` | `ineq` | edits on the shown constraint under a false line |
+|---|---|---|---|
+| `true`, 4 seeds | 14–24 / 60–71 / 0 | 10–23 / 49–63 / 6 | 98–100% on both sets |
+| `none`, 4 seeds | 12–15 / 12–16 / 14–16 | 3–5 / 2–4 / 2–5 | about chance |
+| `noise`, 4 seeds | 11–16 / 11–15 / 13–16 | 3–24 / 2–24 / 4–23 | about chance |
+
+H2 already holds on every seed and now on `ineq` too. For H1 it's the opposite so far: θ_C is at least
+as good as θ_A with no line, and better on `ineq`. Final numbers at step 600 still to come.
+
 The edit-placement numbers come from `eval_episodes.jsonl` (first turn, edit cell in the scope of a
 shown or violated constraint); they aren't a logged metric yet.
 
