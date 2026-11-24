@@ -5,37 +5,54 @@ in `results/runs/`, and everything is also in W&B (project `fbrl`).
 
 ## In flight
 
-As of 2026-11-23 23:15. Approved: this sweep.
+As of 2026-11-24 03:45. Approved: this sweep.
 
-**`grpo_kl`** (array 396792, two runs per GPU via `PER_GPU=2`, any a40/a6000/a100): the `grpo_arms` grid
-with a KL penalty to the warm start, to stop the collapses. 18 runs, W&B group `grpo_kl`:
-- `beta` 0.04: `none` / `true` / `noise` × seeds 0–3 (sweep lines 0–11).
-- `beta` 0.1 as a backup: the three arms × seeds 0–1 (lines 12–17).
+**`grpo_kl` `beta` 0.1** (array 396792 tasks 6–8, two runs per GPU): the three arms × seeds 0–1 with a
+stronger KL penalty, as a check that the 0.04 result below doesn't depend on it. Done around 07:30.
+When done: `python -m fbrl.placement $FBRL/runs/grpo_kl0.1_*` and the eval success by mode; does θ_C
+still follow a false line about 100% of the time, and is no-line success still level across arms?
 
-About 4–4.5h per run when packed. Tasks 0–5 started 23:10 and finish around 03:30; tasks 6–8 are
-queued behind them, so everything is done by about 08:00 on 11-24.
+## 2026-11-24 · grpo_kl: H2 holds on every seed, H1 doesn't
 
-When done, first check stability: `rollout/stopped` near 1 and entropy below about 1 on every run. Then,
-on the stable `beta` 0.04 runs:
-- H2: share of first edits that land where a false line points, on `distinct` and `ineq`, per arm.
-  For grpo_arms true s0 this was 100% on `distinct` (no-line model: about chance, 25%).
-- H1: no-line success, and share of no-line edits that land in a broken constraint, θ_A against θ_C.
-  For grpo_arms seed 0/1 this was 34% for θ_A against 19% for θ_C on `distinct`.
+`grpo_kl` (array 396792): the `grpo_arms` grid with a KL penalty to the warm start (`beta` 0.04), so
+`none` / `true` / `noise` from the fixed warm start on `distinct`/`ineq`, lr 1e-5, 600 steps, seeds 0–3.
+Two runs per GPU (`PER_GPU=2`), 2h50m–4h15m each. W&B: none [s0](https://forge.coreweave.com/wandb/cse-5100-fall-2026/fbrl/runs/p7pm3ovk) [s1](https://forge.coreweave.com/wandb/cse-5100-fall-2026/fbrl/runs/vzje6jkp) [s2](https://forge.coreweave.com/wandb/cse-5100-fall-2026/fbrl/runs/4w95bg07) [s3](https://forge.coreweave.com/wandb/cse-5100-fall-2026/fbrl/runs/lc227clu); true [s0](https://forge.coreweave.com/wandb/cse-5100-fall-2026/fbrl/runs/zgjkqh1f) [s1](https://forge.coreweave.com/wandb/cse-5100-fall-2026/fbrl/runs/v64ri06d) [s2](https://forge.coreweave.com/wandb/cse-5100-fall-2026/fbrl/runs/llhbit1a) [s3](https://forge.coreweave.com/wandb/cse-5100-fall-2026/fbrl/runs/bvrnczfg); noise [s0](https://forge.coreweave.com/wandb/cse-5100-fall-2026/fbrl/runs/s6mxraul) [s1](https://forge.coreweave.com/wandb/cse-5100-fall-2026/fbrl/runs/xndxkvhx) [s2](https://forge.coreweave.com/wandb/cse-5100-fall-2026/fbrl/runs/o2yypqxj) [s3](https://forge.coreweave.com/wandb/cse-5100-fall-2026/fbrl/runs/6qqjvu44).
 
-**Halfway check (11-24 00:40, steps 200–320):** all 12 `beta` 0.04 runs are stable (`stopped` never
-below 1.00, entropy never above 0.72). Latest eval, success in % with no line / true line / false line:
+The KL penalty fixed the instability: all 12 runs kept `stopped` at 0.99 or above and entropy never rose
+above its starting 0.72, against 3 of 6 runs breaking without it.
 
-| arm | `distinct` | `ineq` | edits on the shown constraint under a false line |
-|---|---|---|---|
-| `true`, 4 seeds | 14–24 / 60–71 / 0 | 10–23 / 49–63 / 6 | 98–100% on both sets |
-| `none`, 4 seeds | 12–15 / 12–16 / 14–16 | 3–5 / 2–4 / 2–5 | about chance |
-| `noise`, 4 seeds | 11–16 / 11–15 / 13–16 | 3–24 / 2–24 / 4–23 | about chance |
+Mean ± std over the 4 seeds. Success in % averaged over the last five evals (steps 500–600). The last two
+columns of each set are first-edit placement at step 600 (`fbrl.placement`): `follow`, the share of
+edits inside the constraint a false line names, and `find`, the share inside a truly violated one with no
+line. Chance is about 25% for both.
 
-H2 already holds on every seed and now on `ineq` too. For H1 it's the opposite so far: θ_C is at least
-as good as θ_A with no line, and better on `ineq`. Final numbers at step 600 still to come.
+| arm | `distinct` no / true / false line | follow | find | `ineq` no / true / false line | follow | find |
+|---|---|---|---|---|---|---|
+| θ_A `none` | 16.0±0.6 / 16.2±0.8 / 15.7±0.7 | 27±2 | 26±3 | 7.7±4.6 / 7.6±4.4 / 7.5±4.6 | 23±5 | 25±9 |
+| θ_C `true` | 15.4±0.8 / **62.6±2.8** / **0.0±0.0** | **99.8** | 26±3 | **18.2±2.2** / **66.2±7.7** / 6.8±1.0 | **99.2** | 27±5 |
+| θ_D `noise` | 16.5±0.8 / 15.4±1.0 / 16.1±0.7 | 27±2 | 27±2 | 15.1±7.3 / 15.7±7.0 / 15.9±7.4 | 30±9 | 24±4 |
 
-The edit-placement numbers come from `eval_episodes.jsonl` (first turn, edit cell in the scope of a
-shown or violated constraint); they aren't a logged metric yet.
+**H2: yes, on every seed and both sets.** θ_C sends essentially every edit where the line points, and
+when the line is wrong it fails (0% on `distinct`, 7% on `ineq`). It learned to use the line on `ineq`
+too this time, where using it means looking the pair up in the constraint list. Training with a line
+that carries no information (θ_D) leaves the model ignoring it, so the reliance comes from the line
+being right, not from seeing a line at all.
+
+**H1: no.** We expected training with the line to leave the model worse on its own. With the line taken
+away, θ_C is level with θ_A and θ_D on `distinct` (15.4 against 16.0 and 16.5) and finds the broken
+column as often (26% each). On `ineq` it's ahead: 18.2±2.2 against 7.7±4.6 for θ_A. θ_A and θ_D are
+split there: some seeds pick up `ineq` (θ_A s0 13.6, θ_D s0/s2/s3 18–20) and some barely move (3.8–4.3),
+while all four θ_C seeds do (16.5–21.3). A guess at why: with the line θ_C wins about 65% of its training
+episodes against about 15% for the others, so it gets far more signal about which edits fix a board, and
+some of that carries over when the line is gone.
+
+So at this scale the model treats the line as something to obey when it's there, without giving up what
+it can do without it. The interp question becomes how the two coexist: where θ_C reads the line, and
+whether its no-line path is the same circuit θ_A uses.
+
+Caveats: Qwen3-0.6B, 600 steps, two small constraint families. Each eval cell is 256 episodes, so
+per-run numbers move by a couple of points. The `ineq` gap rests on the split among θ_A seeds; more
+seeds would pin down how often θ_A picks it up.
 
 ## 2026-11-23 · grpo_arms: a first H2 signal, no H1 signal, and half the runs broke
 

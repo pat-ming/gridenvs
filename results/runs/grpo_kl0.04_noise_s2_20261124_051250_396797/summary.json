@@ -1,0 +1,21 @@
+{
+  "global_step": 600,
+  "total_flos": 0.0,
+  "num_input_tokens_seen": 15755111,
+  "gpu0_util_mean": 77.0,
+  "gpu0_mem_peak_gb": 38.87,
+  "gpu0_energy_kwh": 0.8896,
+  "name": "grpo_kl0.04_noise_s2",
+  "tags": [
+    "grpo",
+    "sft-qwen3-0.6b",
+    "mode-noise",
+    "distinct-ineq"
+  ],
+  "status": "finished",
+  "elapsed_sec": 12115.4,
+  "gpu_hours": 3.3654,
+  "best_metric": null,
+  "best_value": null,
+  "best_step": null
+}
