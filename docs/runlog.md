@@ -5,31 +5,31 @@ in `results/runs/`, and everything is also in W&B (project `fbrl`).
 
 ## In flight
 
-As of 2026-11-24 12:30.
+As of 2026-11-24 14:40.
 
-- **1.7B warm start** (`sft17` 397196 done, `eval17` 397197 running): same SFT recipe as 0.6B, exported to
-  `$FBRL/models/sft-qwen3-1.7b`. It logged `init_end_of_reply`, and its final loss was 0.70 (1.79 at
-  the start). When the eval is done, check that `stopped` and `parse` are near 1 and `mixed` is at
-  least about 20% on `distinct`/`ineq`. If so, run `grpo_kl` at 1.7B.
-- **Interp groundwork** (`acts` 397205): last-prompt-token residuals for θ_0, the base model, and
-  `grpo_kl0.04` θ_A/θ_C/θ_D seeds 0–1, plus `grpo_kl0.1` θ_D s1, on `distinct`/`ineq` in modes none,
-  true and counterfactual, 2000 prompts each. Written to `$FBRL/interp/<model>/<set>_<mode>.pt`.
-- **1.7B GRPO, measuring run** (`grpo17` 397233_0): θ_A seed 0 at 1.7B with the `grpo_kl` recipe,
-  `vllm_gpu_memory_utilization` 0.25, alone on a GPU. Check its peak memory and seconds per step, then
-  pack the other 8 lines of `$FBRL/sweeps/grpo17.txt` (3 arms × 3 seeds) two per GPU if they fit.
-  W&B group `grpo17`.
+- **1.7B warm start** (done): `$FBRL/models/sft-qwen3-1.7b` passes the gate. On `distinct`, success is
+  about 10% and `mixed` about 0.6; on `ineq`, success is about 5% and `mixed` about 0.4. `stopped` and
+  `parse` are about 1.
+- **Interp groundwork** (`acts` 397205, hit its 2h limit on the last model): every file is in
+  `$FBRL/interp/<model>/<set>_<mode>.pt`, except that `kl10_noise_s1` has only `distinct_none`.
+- **1.7B GRPO** (W&B group `grpo17`).
+  - The measuring run (397233_0, θ_A s0) uses 31 GB peak on an A6000 at 19 s/step, about 3 h for
+    600 steps.
+  - The other 8 runs (397269, `$FBRL/sweeps/grpo17_rest.txt`) run two per 80 GB A100 with
+    `vllm_gpu_memory_utilization` 0.15, on 4 GPUs with a 12h limit.
 - **More 0.6B seeds** (`grpo_kl_more` 397231, 4 GPUs, two runs each): θ_A and θ_D at `beta` 0.04,
   seeds 4–7, in W&B group `grpo_kl`. Two questions: is θ_C's `ineq` lead over θ_A real, and does
   another θ_D learn to find the column itself?
 - **Line removed halfway** (`grpo_drop` 397232, 2 GPUs): the true line for steps 0–299, then none,
   seeds 0–3 (`configs/experiments/grpo_drop.yaml`), W&B group `grpo_drop`. Question: does following a
   false line fade after step 300? Look at `fbrl.placement` and eval success by mode over steps.
-- **I(θ) probes** (397206–397208, start after `acts`): `fbrl.probe` on `distinct` none, `ineq` none,
-  and `distinct` counterfactual, each with a shuffled-label control. Output goes to
-  `results/interp/probe_<set>_<mode>.json`. When done, ask:
-  - Does any model decode V(s) above the control?
-  - Is θ_D s1 (which finds the column behaviorally) the strongest?
-  - How does θ_A compare with θ_C?
+- **I(θ) probes** (CPU, in the session job; the GPU jobs were cancelled when `acts` timed out):
+  - `fbrl.probe` on `distinct` none (all 9 models), then `ineq` none (8 models), each with a
+    shuffled-label control. Output goes to `results/interp/probe_<set>_none.json`.
+  - When done, ask:
+    - Does any model decode V(s) above the control?
+    - Is θ_D s1 the strongest?
+    - How does θ_A compare with θ_C?
 
 ## 2026-11-24 · grpo_kl at `beta` 0.1: same picture, and one θ_D that learned `distinct`
 
