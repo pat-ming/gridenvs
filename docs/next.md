@@ -2,7 +2,7 @@
 
 As of 2026-11-24. Where we are against the proposal (`CSE 5100 Project Proposal - Moti & Patrick.tex`),
 how the remaining work splits, and the experiments we haven't run yet. Ready-to-paste prompts for each
-track are in [prompts/](prompts/).
+track are in [prompts/](prompts/), and shared interp notes in [interp.md](interp.md).
 
 ## Where we are
 
@@ -35,37 +35,38 @@ Details in the 2026-11-24 entry of [runlog.md](runlog.md).
 
 ## The split
 
-**Track A, generality (Patrick).** Does the result hold where the task is harder, in a second
-environment, and at a bigger model size? Prompt: [prompts/generality.md](prompts/generality.md).
-1. `spec` / `rows` (the proposal's sets). The warm start solves under 1% of these, so GRPO gets no
-   signal; it needs an easier way in (curriculum over m and H, more oracle demos, or easier variants).
-2. Sudoku: wired into `fbrl` (`env.name: sudoku`) but never trained. It needs a warm start, then the
-   three arms.
-3. Qwen3-1.7B-Base: replicate on `distinct`/`ineq`, then on whatever works from 1–2.
-4. Later, the optional-verifier environment E_T (a `check_constraints()` action with a cost), since it's
-   an env design job.
+**Motti: harder puzzles, then native neurons and activations.**
+1. Get a GRPO signal on `spec` / `rows` (the proposal's sets), then run the arms there. Prompt:
+   [prompts/harder.md](prompts/harder.md). Right now the warm start solves under 1% of these, so it
+   needs an easier way in first: a curriculum, more oracle demos, or easier variants of the sets.
+   Variants mean touching Patrick's `src/gridenvs/`, so tell him what changes.
+2. Interp from the neuron and activation side: I(θ) probes (this answers H1), activation patching to
+   find where θ_C reads the line, a Δ_M ablation as the proposal's causal intervention, then
+   neuron-level analysis of the parts patching finds. Prompt: [prompts/neurons.md](prompts/neurons.md).
 
-**Track B, measurement and mechanism (Motti).** The proposal's deliverables 3–5. Notes and prompt:
-[prompts/interp.md](prompts/interp.md).
-1. I(θ), so H1 can actually be answered. Two routes, ideally both:
-   - Probe each violation bit from the residual stream on line-free states (the proposal's §5).
-   - A behavioral readout: prompt each model to list the violated constraints.
-2. D(θ): total-variation distance between the action distributions under true and false lines,
-   computed from logits instead of sampled edits.
-3. Where θ_C reads the line, and whether its line-free path matches θ_A's (activation patching, then a
-   Δ_M ablation as the proposal's causal intervention).
-4. Recoverability: can a probe tell which condition trained a model, across held-out seeds?
+**Patrick: the J-lens, and iterating on it.** The same questions from the readout side:
+- Does the model "say" which constraint is broken before acting, and does θ_A do it more than θ_C?
+- What does θ_C's residual stream carry at the line token?
+- When does that change across checkpoints?
 
-**Track C, H3 and other cheap 4x4 experiments (whoever has GPUs free; Claude on the cluster can run
-these).** The recipe already works here, so each is a config or a small env mode:
-- *Unreliable line (H3).* Show the true line with probability p and a false one otherwise. Where does
-  reliance switch off, and does line-free skill grow as p drops? Needs a mode between `true` and `noise`.
-- *Line taken away mid-training.* `env.mode` takes a schedule, e.g. `[[0, "true"], [300, none]]`.
-  Does θ_C stop relying on the line, and how fast?
-- *More θ_A seeds on `ineq`.* θ_A and θ_D split there (some seeds pick it up, some don't), so
-  θ_C's lead could be a seed effect. Four more seeds per arm would settle it.
-- *SFT comparison (stretch).* Action targets only, against diagnosis as input, against diagnosis as a
-  generated target before the edit. That's a demos change in `fbrl.train_sft`.
+Prompt: [prompts/jlens.md](prompts/jlens.md). Optional, since it's his environment: a Sudoku warm
+start, then the three arms there.
+
+The two interp sides share one prompt set and model list. The shared notes, the question list and
+who owns what are in [interp.md](interp.md). Each side checks the other: J-lens readouts against
+probes and known V(s), and probes against what the lens says the model represents.
+
+**Claude on the cluster: runs that only need the existing recipe.**
+- *Qwen3-1.7B-Base replication:* SFT warm start, then `grpo_kl` on `distinct`/`ineq`, 3–4 seeds per
+  arm. This gives both interp sides a bigger model.
+- *H3, an unreliable line:* show the true line with probability p and a false one otherwise. Where
+  does reliance switch off, and does line-free skill grow as p drops? Needs a mode between `true` and
+  `noise`.
+- *Line taken away mid-training:* `env.mode` takes a schedule like `[[0, "true"], [300, none]]`.
+- *More θ_A seeds on `ineq`*, to settle whether θ_C's lead there is a seed effect.
+
+**Later or stretch:** the optional-verifier environment E_T; the SFT comparison (actions only,
+diagnosis as input, diagnosis as a target); coding tasks.
 
 ## Practical notes for anyone starting
 
