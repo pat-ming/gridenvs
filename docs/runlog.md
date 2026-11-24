@@ -5,8 +5,25 @@ in `results/runs/`, and everything is also in W&B (project `fbrl`).
 
 ## In flight
 
-As of 2026-11-23. Nothing running. Proposed (not approved): rerun `true` s1 and `noise` s1 with a KL
-penalty (`beta` 0.04) to see whether it keeps 600 steps stable, see below.
+As of 2026-11-23 23:15. Approved: this sweep.
+
+**`grpo_kl`** (array 396792, two runs per GPU via `PER_GPU=2`, any a40/a6000/a100): the `grpo_arms` grid
+with a KL penalty to the warm start, to stop the collapses. 18 runs, W&B group `grpo_kl`:
+- `beta` 0.04: `none` / `true` / `noise` × seeds 0–3 (sweep lines 0–11).
+- `beta` 0.1 as a backup: the three arms × seeds 0–1 (lines 12–17).
+
+About 4–4.5h per run when packed. Tasks 0–5 started 23:10 and finish around 03:30; tasks 6–8 are
+queued behind them, so everything is done by about 08:00 on 11-24.
+
+When done, first check stability: `rollout/stopped` near 1 and entropy below about 1 on every run. Then,
+on the stable `beta` 0.04 runs:
+- H2: share of first edits that land where a false line points, on `distinct` and `ineq`, per arm.
+  For grpo_arms true s0 this was 100% on `distinct` (no-line model: about chance, 25%).
+- H1: no-line success, and share of no-line edits that land in a broken constraint, θ_A against θ_C.
+  For grpo_arms seed 0/1 this was 34% for θ_A against 19% for θ_C on `distinct`.
+
+The edit-placement numbers come from `eval_episodes.jsonl` (first turn, edit cell in the scope of a
+shown or violated constraint); they aren't a logged metric yet.
 
 ## 2026-11-23 · grpo_arms: a first H2 signal, no H1 signal, and half the runs broke
 
@@ -31,6 +48,14 @@ and `cf_score`. Step 0 for every run is `distinct` 8.6 / 7.8 / 8.2, `ineq` 3.5 /
 line, and 4% with a false one. That's a model that reads the line and acts on it, including when the
 line is wrong, which is exactly what `cf_score` was built to catch (+0.63, against about 0 for every
 other run). It's one seed, and only on `distinct`; on `ineq` the same model ignores the line.
+
+Where the first edit lands makes it plainer. θ_C seed 0 puts 100% of its `distinct` edits in the column
+the line names, true or false. With no line, 19% land in the broken column, below the 25% chance rate;
+θ_A seed 1 gets 34%. So the line seems to have taken over finding the broken column, even though no-line
+success hasn't dropped (yet). The likely reason it's `distinct` and not `ineq`: on `distinct`,
+`violated: {3}` always means column 3, a fixed rule. On `ineq`, c3 is a different pair of cells on every
+board, so using the line means looking it up in the constraint list. θ_C follows a false line there only
+weakly (39% of edits in the shown pair, against 25% in a truly violated one).
 
 **H1 has no signal yet.** On the no-line eval, θ_A (15–22%) and the one usable θ_C (16–23%) end up in
 the same place. So far training with the line didn't cost the model anything when the line is taken

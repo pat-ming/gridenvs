@@ -1,0 +1,7 @@
+# Layered on grpo_arms.yaml: 3 of 6 grpo_arms runs lost the stop token or fell into gibberish with nothing anchoring them (beta 0).
+experiment:
+  name: "grpo_kl{grpo.beta}_{env.mode}_s{experiment.seed}"
+  notes: "theta_{env.mode}, seed {experiment.seed}, KL beta {grpo.beta} to the warm start, lr 1e-5, 600 steps on distinct + ineq. H1: no-line success by arm. H2: cf_score on theta_true."
+
+grpo:
+  beta: 0.04
