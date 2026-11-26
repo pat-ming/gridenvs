@@ -4,7 +4,7 @@ import pytest
 
 from constraints import AllDistinctCol, PairwiseLess, violations
 from grid_env import NOISE_ITEM, GridEnv, counterfactual_score, format_feedback
-from instances import CONSTRAINT_SETS, make_instance
+from instances import CONSTRAINT_SETS, CURRICULUM, make_instance, make_level
 
 SETS = list(CONSTRAINT_SETS)
 
@@ -168,3 +168,58 @@ def test_noise_line_token_length_matches_true_line():
     count = lambda s: len(tok(s, add_special_tokens=False).input_ids)
     for n in range(11):
         assert count(format_feedback(list(range(10))[:n])) == count(format_feedback([NOISE_ITEM] * n))
+
+
+# ------------------------------------------------------------ difficulty settings
+@pytest.mark.parametrize("set_name,k", [("spec", 4), ("spec", 8), ("rows", 1), ("ineq", 3)])
+def test_k_keeps_a_prefix_and_corrupts_only_cells_it_can_see(set_name, k):
+    for seed in range(30):
+        full = make_instance(set_name, 2, seed)
+        inst = make_instance(set_name, 2, seed, k=k)
+        assert inst["constraints"] == full["constraints"][:k]
+        assert violations(inst["solution"], inst["constraints"]) == []
+        assert violations(inst["grid"], inst["constraints"]) != []
+        seen = frozenset().union(*(c.scope() for c in inst["constraints"]))
+        assert {tuple(map(int, rc)) for rc in np.argwhere(inst["grid"] != inst["solution"])} <= seen
+
+
+@pytest.mark.parametrize("set_name", ["rows", "spec", "distinct", "ineq", "desc"])
+def test_vmax_narrows_the_value_range(set_name):
+    for seed in range(30):
+        inst = make_instance(set_name, 2, seed, vmax=5)
+        assert inst["solution"].max() <= 5 and inst["grid"].max() <= 5
+        assert violations(inst["solution"], inst["constraints"]) == []
+    env = GridEnv("none", H=2)
+    obs = env.reset(make_instance("rows", 1, 0, vmax=5))
+    assert "Values are integers 0-5." in obs and "Example reply: EDIT 2 1 5" in obs
+    _, _, _, info = env.step("EDIT 0 0 6")  # outside the narrowed range
+    assert not info["log"][-1]["parse_ok"]
+
+
+def test_vmax_rejects_sum_sets_that_cannot_reach_ten():
+    with pytest.raises(AssertionError):
+        make_instance("rows", 1, 0, vmax=4)
+
+
+def test_default_prompt_is_unchanged():
+    obs = GridEnv("none", H=4).reset(make_instance("spec", 2, 0))
+    assert "Values are integers 0-9." in obs and "Example reply: EDIT 2 1 7" in obs
+
+
+@pytest.mark.parametrize("ladder", list(CURRICULUM))
+def test_every_curriculum_level_is_solvable_within_its_horizon(ladder):
+    for level in range(len(CURRICULUM[ladder])):
+        for seed in range(10):
+            inst, H = make_level(ladder, level, seed)
+            assert H >= inst["m"]
+            env = GridEnv("true", H=H)
+            env.reset(inst)
+            edits = [(int(r), int(c), int(inst["solution"][r, c]))
+                     for r, c in np.argwhere(inst["grid"] != inst["solution"])]
+            edits += [edits[0]] * (H - len(edits))
+            for r, c, v in edits:
+                _, reward, _, _ = env.step(f"EDIT {r} {c} {v}")
+            assert reward == 1.0
+    # The last level of each ladder is the full set at its usual settings.
+    last = dict(CURRICULUM[ladder][-1])
+    assert last.get("k") is None and last.get("vmax", 9) == 9

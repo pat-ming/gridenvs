@@ -48,14 +48,16 @@ class GridEnv:
         self.g = np.array(inst["grid"]).copy()
         self.cs = inst["constraints"]
         self.K = len(self.cs)
+        self.vmax = inst.get("vmax", VMAX)  # instances can narrow the value range
         assert self.mode != "noise" or self.K <= 10, "two-digit indices would break length matching"
         self.t = 0
         self.log = []
         header = (
             "Constraints:\n" + render_constraints(self.cs) + "\n"
-            f"Values are integers {VMIN}-{VMAX}. Rows and columns are numbered 0-3.\n"
+            f"Values are integers {VMIN}-{self.vmax}. Rows and columns are numbered 0-3.\n"
             f"You have {self.H} edits. Each turn, reply with only one line of the form EDIT r c v "
-            "(row r, column c, new value v), with no other text. Example reply: EDIT 2 1 7\n\n"
+            "(row r, column c, new value v), with no other text. "
+            f"Example reply: EDIT 2 1 {min(7, self.vmax)}\n\n"
         )
         return header + self._obs()
 
@@ -68,7 +70,7 @@ class GridEnv:
         action = None
         if matches:
             r, c, v = map(int, matches[-1])
-            if VMIN <= v <= VMAX:
+            if VMIN <= v <= self.vmax:
                 action = (r, c, v)
                 self.g[r, c] = v
         # invalid / unparseable action = no-op that still uses a turn
