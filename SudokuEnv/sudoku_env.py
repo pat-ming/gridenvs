@@ -17,13 +17,13 @@ import re
 import numpy as np
 
 from constraints import N, render_constraints, violations
-from instances import VMAX, VMIN
 
 MODES = ("none", "true", "noise", "counterfactual")
 # Under the Qwen3 tokenizer "□" takes as many tokens as one digit. Indices can have two digits here,
 # so a noise item repeats it to the width of a real index. tests/test_env.py checks this.
 NOISE_ITEM = "□"
-ACTION_RE = re.compile(r"\bWRITE\s+([1-9])\s+([0-8])\s+([0-8])(?!\d)")
+# Single digits only; whether they are on the board depends on its size, so step() checks that.
+ACTION_RE = re.compile(r"\bWRITE\s+(\d)\s+(\d)\s+(\d)(?!\d)")
 
 
 def format_feedback(items) -> str:
@@ -48,14 +48,16 @@ class SudokuEnv:
         self.g = np.array(inst["grid"]).copy()
         self.cs = inst["constraints"]
         self.K = len(self.cs)
+        self.n = inst.get("n", N)
         self.t = 0
         self.log = []
         header = (
             "Constraints:\n" + render_constraints(self.cs) + "\n"
-            f"Values are digits {VMIN}-{VMAX}. Rows and columns are numbered 0-{N - 1}. "
-            f"Boxes are numbered 0-{N - 1}, left to right and then top to bottom.\n"
+            f"Values are digits 1-{self.n}. Rows and columns are numbered 0-{self.n - 1}. "
+            f"Boxes are numbered 0-{self.n - 1}, left to right and then top to bottom.\n"
             f"You have {self.H} writes. Each turn, reply with only one line of the form WRITE v r c "
-            "(value v, row r, column c), with no other text. Example reply: WRITE 7 2 1\n\n"
+            "(value v, row r, column c), with no other text. "
+            f"Example reply: WRITE {min(7, self.n)} 2 1\n\n"
         )
         return header + self._obs()
 
@@ -68,8 +70,9 @@ class SudokuEnv:
         action = None
         if matches:
             v, r, c = map(int, matches[-1])
-            action = (v, r, c)
-            self.g[r, c] = v
+            if 1 <= v <= self.n and r < self.n and c < self.n:
+                action = (v, r, c)
+                self.g[r, c] = v
         # invalid / unparseable action = no-op that still uses a turn
 
         self.t += 1
@@ -148,6 +151,7 @@ def counterfactual_score(log: list[dict], constraints) -> dict | None:
     because scope unions differ in size. score > 0 means writes lean toward the false line.
     Returns None if no turn had a parseable write and a shown set differing from V.
     """
+    side = constraints[0].n
     totals = {"toward_true": 0.0, "toward_false": 0.0, "chance_true": 0.0, "chance_false": 0.0}
     n = 0
     for e in log:
@@ -159,7 +163,7 @@ def counterfactual_score(log: list[dict], constraints) -> dict | None:
         for name, ks in (("true", true_only), ("false", false_only)):
             cells = frozenset().union(*(constraints[k].scope() for k in ks)) if ks else frozenset()
             totals[f"toward_{name}"] += cell in cells
-            totals[f"chance_{name}"] += len(cells) / (N * N)
+            totals[f"chance_{name}"] += len(cells) / (side * side)
         n += 1
     if n == 0:
         return None

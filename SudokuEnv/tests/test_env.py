@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 
 from constraints import Box, Col, Row, all_constraints, violations
-from instances import make_instance
+from instances import CURRICULUM, make_instance, make_level
 from sudoku_env import NOISE_ITEM, SudokuEnv, counterfactual_score, format_feedback
 
 MODES = ["none", "true", "noise", "counterfactual"]
@@ -176,3 +176,78 @@ def test_noise_line_token_length_matches_true_line():
         indices = sorted(int(k) for k in rng.choice(27, size=int(rng.integers(0, 28)), replace=False))
         noise = [NOISE_ITEM * len(str(k)) for k in indices]
         assert count(format_feedback(indices)) == count(format_feedback(noise))
+
+
+# ------------------------------------------------------------ board sizes and difficulty settings
+@pytest.mark.parametrize("n", [4, 6])
+def test_small_boards_are_valid_varied_and_indexed_like_the_full_one(n):
+    cs = all_constraints(n)
+    assert len(cs) == 3 * n and cs[n] == Col(0, n) and cs[2 * n] == Box(0, n)
+    for r in range(n):
+        for c in range(n):
+            assert sum((r, c) in u.scope() for u in cs) == 3
+    grids = set()
+    for seed in range(200):
+        inst = make_instance(2, seed, n=n)
+        assert violations(inst["solution"], inst["constraints"]) == []
+        assert violations(inst["grid"], inst["constraints"]) != []
+        assert ((inst["grid"] >= 1) & (inst["grid"] <= n)).all()
+        grids.add(inst["solution"].tobytes())
+    assert len(grids) > 100
+
+
+def test_six_by_six_boxes_are_two_rows_by_three_columns():
+    assert Box(0, 6).scope() == {(r, c) for r in range(2) for c in range(3)}
+    assert Box(3, 6).scope() == {(r, c) for r in range(2, 4) for c in range(3, 6)}
+
+
+@pytest.mark.parametrize("n,m", [(4, 1), (4, 2), (6, 2), (9, 2)])
+@pytest.mark.parametrize("mode", MODES)
+def test_every_size_is_solvable_in_m_writes(n, m, mode):
+    for seed in range(10):
+        inst = make_instance(m, seed, n=n)
+        env = SudokuEnv(mode, H=m, seed=seed)
+        env.reset(inst)
+        wrong = np.argwhere(inst["grid"] != inst["solution"])
+        writes = [(int(inst["solution"][r, c]), int(r), int(c)) for r, c in wrong]
+        writes += [writes[0]] * (m - len(writes))
+        for v, r, c in writes:
+            _, reward, _, info = env.step(f"WRITE {v} {r} {c}")
+        assert reward == 1.0 and info["solved"]
+
+
+def test_k_keeps_a_prefix_of_rows_then_columns():
+    inst = make_instance(1, 0, n=4, k=4)
+    assert inst["constraints"] == all_constraints(4)[:4]
+    assert violations(inst["solution"], inst["constraints"]) == []
+
+
+@pytest.mark.parametrize("text", ["WRITE 5 0 0", "WRITE 1 4 0", "WRITE 1 0 4", "WRITE 0 0 0"])
+def test_small_board_rejects_writes_off_the_board(text):
+    env = SudokuEnv("none", H=1)
+    inst = make_instance(1, 0, n=4)
+    obs = env.reset(inst)
+    assert "Values are digits 1-4. Rows and columns are numbered 0-3." in obs
+    assert "Example reply: WRITE 4 2 1" in obs
+    _, _, _, info = env.step(text)
+    assert (env.g == inst["grid"]).all() and not info["log"][-1]["parse_ok"]
+
+
+def test_counterfactual_score_chance_uses_the_board_size():
+    cs = all_constraints(4)
+    out = counterfactual_score([{"V": [0], "shown": [1], "action": (1, 1, 2)}], cs)
+    assert out["chance_false"] == pytest.approx(4 / 16)
+
+
+@pytest.mark.parametrize("level", range(len(CURRICULUM)))
+def test_every_curriculum_level_is_solvable_within_its_horizon(level):
+    for seed in range(10):
+        inst, H = make_level(level, seed)
+        env = SudokuEnv("true", H=H)
+        env.reset(inst)
+        writes = [(int(inst["solution"][r, c]), int(r), int(c))
+                  for r, c in np.argwhere(inst["grid"] != inst["solution"])]
+        writes += [writes[0]] * (H - len(writes))
+        for v, r, c in writes:
+            _, reward, _, _ = env.step(f"WRITE {v} {r} {c}")
+        assert reward == 1.0
