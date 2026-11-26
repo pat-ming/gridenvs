@@ -93,6 +93,47 @@ Sum constraints have a catch for H2: the line says which row is wrong but not by
 a pure reader has to add up the row to choose a value. Comparing against `distinct` and `ineq` can
 help separate the two explanations.
 
+### Easier levels
+
+`spec` and `rows` start too hard to train on (see below). `make_instance` takes two optional
+settings that make them easier. Leaving both out gives exactly the same instances as before.
+
+- `k`: keep only the first `k` constraints of the set. Each index keeps its meaning, so for example
+  `spec` with `k=4` is its four row sums. Corrupting edits only touch cells those constraints check.
+- `vmax`: cell values run from 0 to `vmax` instead of 0–9. The prompt and the action check follow
+  it. Sum targets stay at 10, so sum sets need `vmax >= 5`.
+
+`CURRICULUM` in `instances.py` lists levels that build up to each full set, easiest first, and
+`make_level` builds one:
+
+```python
+from instances import make_level
+inst, H = make_level("spec", level=0, seed=123)
+env = GridEnv(mode="true", H=H, seed=0)
+```
+
+Success rates for Qwen3-0.6B before any training, in %, with the share of puzzles that had mixed
+outcomes in parentheses. Mixed puzzles are what give GRPO something to learn from. Each cell is 64
+puzzles × 8 samples, with thinking off, temperature 1 and `top_k=0`. `ineq` (m=2, H=4), which did
+train, measured 5.1 (30) with the true line and 3.1 (19) without it under the same setup.
+
+| Level | Settings | True line | No line |
+|---|---|---|---|
+| `rows` 0 | m=1, H=1, `vmax=5` | 4.5 (28) | 3.3 (19) |
+| `rows` 1 | m=1, H=1 | 4.3 (23) | 0.8 (5) |
+| `rows` 2 | m=2, H=4 (the full set) | about 0 | about 0 |
+| `spec` 0 | `k=4` (row sums), m=1, H=1, `vmax=5` | 4.7 (28) | 3.1 (17) |
+| `spec` 1 | `k=8` (+ distinct columns), m=1, H=1, `vmax=5` | 2.3 (16) | 0.8 (6) |
+| `spec` 2 | all 10, m=1, H=1, `vmax=5` | 1.0 (8) | 0.2 (2) |
+| `spec` 3 | m=1, H=1 | 1.0 (6) | 0.8 (2) |
+| `spec` 4 | m=2, H=4 (the full set) | about 0 | about 0 |
+
+Level 0 of both ladders starts about where `ineq` did. The later levels start lower, and the plan is
+to reach them by training on the earlier ones, which hasn't been tested. The model starts close to
+chance: with a sum constraint only one value per cell repairs a row, so the levels work by shrinking
+the number of choices. Using fewer corruptions, more turns or ±1 corruptions didn't help. Extra
+turns made it worse, because a later edit can undo a repair.
+
 ## Using an environment in a training loop
 
 ```python
@@ -123,16 +164,18 @@ These came up when trying the environments on Qwen3-0.6B:
 - **Turn thinking off.** Otherwise the model can compute V(s) in text instead of internally.
 - **Set sampling explicitly.** Qwen's defaults (`temperature=0.6, top_k=20`) aren't the plain softmax
   that GRPO's log-probs assume.
-- **`spec` is hard from a cold start.** With the current wording, Qwen3-0.6B had 0 successes in 64
-  episodes per setting tried, with the feedback line on and off. A terminal reward gives GRPO nothing
-  to learn from if every episode ties.
+- **`spec` and `rows` are hard from a cold start.** With the current wording, Qwen3-0.6B solves
+  under 1% of them, with the feedback line on and off. A terminal reward gives GRPO nothing to learn
+  from if every episode ties. Start from the [easier levels](#easier-levels).
+- **About a fifth of replies copy the example reply.** They count as ordinary edits. With a narrowed
+  `vmax` the example's value is clamped into range, so the copies stay valid.
 
 ## Files in `4x4Env/`
 
 | File | Purpose |
 |---|---|
 | `constraints.py` | Constraint types and `violations()`, the single source of truth for V(s) |
-| `instances.py` | Instance generation and constraint sets |
+| `instances.py` | Instance generation, constraint sets and `CURRICULUM` |
 | `grid_env.py` | `GridEnv` and `counterfactual_score` |
 | `tests/test_env.py` | Environment tests |
 
@@ -191,12 +234,45 @@ violated: {1, 8, 14, 15, 19, 26}
 ```
 
 Boards have no blank cells: every cell holds a digit, and some of them are wrong. That keeps finding
-V(s) a real computation, as in `4x4Env`, because a blank would mark the broken units on sight. This
-environment hasn't been tried with a model yet, so the prompt wording may need the same tuning.
+V(s) a real computation, as in `4x4Env`, because a blank would mark the broken units on sight.
+
+### Smaller boards and levels
+
+`make_instance` takes two optional settings. Leaving both out gives exactly the same 9x9 instances
+as before.
+
+- `n`: board size, 4 (2x2 boxes), 6 (boxes two rows tall and three columns wide) or 9. Indices
+  follow the same layout: rows `0..n-1`, columns `n..2n-1`, boxes `2n..3n-1`. The prompt, the action
+  check and the example reply follow the size.
+- `k`: keep only the first `k` constraints, so `k = n` checks rows only and `k = 2n` checks rows and
+  columns.
+
+`CURRICULUM` in `instances.py` lists levels from a 4x4 board with rows only up to the full board,
+and `make_level(level, seed)` returns `(instance, H)`. Measured the same way as the
+[4x4 levels](#easier-levels):
+
+| Level | Settings | True line | No line |
+|---|---|---|---|
+| 0 | `n=4, k=4` (rows only), m=1, H=1 | 1.6 (11) | 2.0 (11) |
+| 1 | `n=4, k=8` (+ columns), m=1, H=1 | 1.0 (6) | 2.3 (13) |
+| 2 | `n=4`, m=1, H=1 | 1.4 (5) | 1.6 (5) |
+| 3 | `n=6`, m=1, H=1 | 0.2 (2) | 0.0 (0) |
+| 4 | `n=9`, m=1, H=1 | 0.0 (0) | not run |
+| 5 | `n=9`, m=2, H=4 | 0.0 (0) | not run |
+
+**Even level 0 starts below `ineq`**, which measured 5.1 (30) and 3.1 (19). On a 4x4 board, one or
+two of the 64 possible writes repair it, and the model starts at about that chance rate. Showing the
+corrupted cell as a blank didn't raise it either (0–3% on every size). Level 0 might still train with
+a larger GRPO group, since mixed puzzles become more common with more samples per puzzle. Otherwise
+Sudoku probably needs help from outside the environment: a short supervised warm start on repairs
+(each instance stores its `solution`), a larger model, or starting from a 4x4Env checkpoint.
+
+On 9x9 boards, 20–30% of replies are invalid, mostly because the model writes a constraint index
+such as 12 or 25 as a coordinate. About a fifth of replies on every size copy the example reply.
 
 | File | Purpose |
 |---|---|
 | `constraints.py` | `Row`, `Col`, `Box` and `violations()`, the single source of truth for V(s) |
-| `instances.py` | Solved-board generation and corruption |
+| `instances.py` | Solved-board generation, corruption and `CURRICULUM` |
 | `sudoku_env.py` | `SudokuEnv` and `counterfactual_score` |
 | `tests/test_env.py` | Environment tests |
