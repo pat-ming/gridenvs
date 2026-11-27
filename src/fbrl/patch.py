@@ -190,10 +190,11 @@ def main():
     args.out.mkdir(parents=True, exist_ok=True)
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
+    dtype = torch.bfloat16 if device == "cuda" else torch.float32  # bf16 matmuls crawl on CPU
     for spec in args.model:
         name, path = spec.split("=", 1)
         tok = AutoTokenizer.from_pretrained(path)
-        model = AutoModelForCausalLM.from_pretrained(path, dtype=torch.bfloat16).to(device).eval()
+        model = AutoModelForCausalLM.from_pretrained(path, dtype=dtype).to(device).eval()
         res = {"model": path}
         for set_name in args.sets:
             r = analyze(model, tok, set_name, args.n, args.batch, not args.no_patch)
