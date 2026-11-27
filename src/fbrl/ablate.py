@@ -55,8 +55,12 @@ def states(set_name: str, mode: str, n: int, fmt: ChatFormat) -> dict:
         solves.append(s)
         on_V.append([[any((r, c) in cs[k].scope() for k in V) for c in range(4)] for r in range(4)])
         on_shown.append([[any((r, c) in cs[k].scope() for k in shown) for c in range(4)] for r in range(4)])
+    # ineq prompts differ in length; left-pad so the reply tokens line up at the end
+    width = max(len(x[0]) for x in ids)
+    pad = fmt.tok.pad_token_id or fmt.tok.eos_token_id
     return {
-        "ids": torch.tensor(ids),
+        "ids": torch.tensor([[[pad] * (width - len(x)) + x for x in row] for row in ids]),
+        "mask": torch.tensor([[[0] * (width - len(x)) + [1] * len(x) for x in row] for row in ids]),
         "solves": torch.tensor(np.array(solves)),
         "on_V": torch.tensor(on_V),
         "on_shown": torch.tensor(on_shown),
@@ -74,22 +78,26 @@ class HeadAblation:
         self.hooks = []
 
     @torch.no_grad()
-    def fit_means(self, groups: list[torch.Tensor], batch: int) -> None:
+    def fit_means(self, groups: list[dict], batch: int) -> None:
+        """Mean o_proj input per layer over the real (unpadded) tokens of every group's prompts."""
         sums = torch.zeros(len(self.layers), self.H * self.hd, device=self.model.device)
         count = 0
+        mask = None
+
         def add(_, args, l):
-            sums[l] += args[0].float().sum((0, 1))
+            sums[l] += (args[0].float() * mask[..., None]).sum((0, 1))
 
         hooks = [
             layer.self_attn.o_proj.register_forward_pre_hook(lambda m, a, l=l: add(m, a, l))
             for l, layer in enumerate(self.layers)
         ]
         try:
-            for ids in groups:  # prompts of different lengths can't share a batch
-                for b in range(0, len(ids), batch):
-                    x = ids[b : b + batch, 0].to(self.model.device)  # one reply per prompt
-                    self.model(input_ids=x, logits_to_keep=1)
-                    count += x.numel()
+            for g in groups:
+                for b in range(0, len(g["ids"]), batch):
+                    x = g["ids"][b : b + batch, 0].to(self.model.device)  # one reply per prompt
+                    mask = g["mask"][b : b + batch, 0].to(self.model.device)
+                    self.model(input_ids=x, attention_mask=mask, logits_to_keep=1)
+                    count += mask.sum().item()
         finally:
             for h in hooks:
                 h.remove()
@@ -121,8 +129,11 @@ def behavior(model, s: dict, digits: torch.Tensor, batch: int) -> dict:
     out = {"success": [], "on_V": [], "on_shown": []}
     for b in range(0, len(s["ids"]), batch):
         ids = s["ids"][b : b + batch].to(model.device)
+        mask = s["mask"][b : b + batch].to(model.device)
         B = ids.shape[0]
-        logits = model(input_ids=ids.flatten(0, 1), logits_to_keep=5).logits.float()
+        logits = model(
+            input_ids=ids.flatten(0, 1), attention_mask=mask.flatten(0, 1), logits_to_keep=5
+        ).logits.float()
         logits = logits.view(B, 4, 4, 5, -1)
         p_r = logits[:, 0, 0, 0, digits[:4]].softmax(-1)  # after "EDIT "
         p_c = logits[:, :, 0, 2, digits[:4]].softmax(-1)  # after "EDIT r "
@@ -168,7 +179,7 @@ def main():
     res = {"model": args.model, "conditions": {k: [list(h) for h in v] for k, v in conditions.items()}}
     for set_name in args.sets:
         data = {mode: states(set_name, mode, args.n, fmt) for mode in MODES}
-        abl.fit_means([d["ids"] for d in data.values()], args.batch * 4)
+        abl.fit_means(list(data.values()), args.batch * 4)
         for cond, hs in conditions.items():
             abl.on(hs)
             try:
