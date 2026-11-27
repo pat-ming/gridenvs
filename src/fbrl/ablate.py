@@ -10,7 +10,10 @@ whether it solves it. Per mode this gives:
 Heads are mean-ablated: their o_proj input is replaced, at every position, by its mean over prompts
 and positions on line-free and lined prompts.
 
-    python -m fbrl.ablate --model <path> --heads 14.3 17.9 --random 5 --out results/interp/ablate_theta_C_s0.json
+    python -m fbrl.ablate --model <path> --group movers=17.1,19.4 --group encoders=0.3,13.6 \
+        --random 5 --out results/interp/ablate_theta_C_s0.json
+
+--random k adds k random head sets the size of the largest group, as a control.
 """
 
 import argparse
@@ -135,8 +138,8 @@ def behavior(model, s: dict, digits: torch.Tensor, batch: int) -> dict:
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--model", required=True)
-    ap.add_argument("--heads", nargs="*", default=[], help="layer.head, e.g. 14.3")
-    ap.add_argument("--random", type=int, default=0, help="random head sets of the same size, as control")
+    ap.add_argument("--group", action="append", default=[], help="name=layer.head,..., repeatable")
+    ap.add_argument("--random", type=int, default=0)
     ap.add_argument("--sets", nargs="+", default=["distinct", "ineq"])
     ap.add_argument("--n", type=int, default=256)
     ap.add_argument("--batch", type=int, default=16)
@@ -150,15 +153,16 @@ def main():
     fmt = ChatFormat(tok, enable_thinking=False)
     model = AutoModelForCausalLM.from_pretrained(args.model, dtype=dtype).to(device).eval()
     digits = torch.tensor([tok.convert_tokens_to_ids(str(d)) for d in range(10)], device=device)
-    heads = [tuple(map(int, h.split("."))) for h in args.heads]
     abl = HeadAblation(model)
     rng = np.random.default_rng(args.seed)
     all_heads = [(l, h) for l in range(len(abl.layers)) for h in range(abl.H)]
     conditions = {"intact": []}
-    if heads:
-        conditions["heads"] = heads
+    for g in args.group:
+        name, heads = g.split("=")
+        conditions[name] = [tuple(map(int, h.split("."))) for h in heads.split(",")]
+    size = max(map(len, conditions.values()))
     for i in range(args.random):
-        pick = rng.choice(len(all_heads), len(heads), replace=False)
+        pick = rng.choice(len(all_heads), size, replace=False)
         conditions[f"random{i}"] = [all_heads[j] for j in pick]
 
     res = {"model": args.model, "conditions": {k: [list(h) for h in v] for k, v in conditions.items()}}
