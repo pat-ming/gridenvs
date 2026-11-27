@@ -6,7 +6,7 @@ requires-python = ">=3.12,<3.13"
 dependencies = ["numpy>=2", "pyyaml>=6", "typer>=0.16"]
 
 [dependency-groups]
-dev = ["pytest>=8", "ruff>=0.14"]
+dev = ["pytest>=8", "ruff>=0.14", "matplotlib>=3.11"]
 # Training stack. uv installs it by default; `pip install -e .` gets only the envs and harness.
 train = [
     "trl>=1.16",

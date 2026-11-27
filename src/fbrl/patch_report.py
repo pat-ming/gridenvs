@@ -32,7 +32,7 @@ def report(path: Path, out: Path, top: int) -> list[tuple[str, int, int, float]]
         rec_resid, rec_heads = recovery(r, "resid"), recovery(r, "heads")
         ax = axes[0, j]
         im = ax.imshow(rec_resid.T, aspect="auto", cmap="RdBu_r", vmin=-1, vmax=1, origin="lower")
-        ax.set_yticks(range(len(r["tokens"])), [repr(t)[1:-1] for t in r["tokens"]], fontsize=7)
+        ax.set_yticks(range(len(r["tokens"])), [repr(t)[1:-1].replace(" ", "␣") for t in r["tokens"]], fontsize=7)
         ax.set_xlabel("layer (0 = embedding)")
         ax.set_title(f"{name} {s}: residual patch, recovery")
         fig.colorbar(im, ax=ax)
