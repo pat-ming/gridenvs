@@ -153,7 +153,7 @@ def analyze(model, tok, set_name: str, n: int, batch: int, patch: bool) -> dict:
             for pos in range(P):
                 s = -P + pos
 
-                def put(_, __, output, l=l, pos=pos, s=s):
+                def put(_, __, output, l=l, pos=pos, s=s, resid=resid):
                     h = output[0] if isinstance(output, tuple) else output
                     h[:, s] = resid[l][:, pos]
                     return output
@@ -164,7 +164,7 @@ def analyze(model, tok, set_name: str, n: int, batch: int, patch: bool) -> dict:
             for h in range(H):
                 sl = slice(h * hd, (h + 1) * hd)
 
-                def put_head(_, args, l=l, sl=sl):
+                def put_head(_, args, l=l, sl=sl, heads=heads):
                     x = args[0].clone()
                     x[:, -P:, sl] = heads[l][:, :, sl]
                     return (x, *args[1:])
