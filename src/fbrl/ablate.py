@@ -14,6 +14,10 @@ and positions on line-free and lined prompts.
         --random 5 --out results/interp/ablate_theta_C_s0.json
 
 --random k adds k random head sets the size of the largest group, as a control.
+
+--knockout name=16-20 blocks attention from every later position to the line's index token at layers
+16-20 inclusive; name=16-20+1 blocks the token one after it instead (the "}"), as a control. A
+no-op on line-free prompts.
 """
 
 import argparse
@@ -37,7 +41,9 @@ def states(set_name: str, mode: str, n: int, fmt: ChatFormat) -> dict:
         [{"role": "user", "content": OBS}], tokenize=False, add_generation_prompt=True, **fmt.kwargs
     )
     replies = [fmt.tok.encode(f"EDIT {r} {c} ", add_special_tokens=False) for r in range(4) for c in range(4)]
-    ids, solves, on_V, on_shown = [], [], [], []
+    # tokens after the line's "}": the end of the user turn and the assistant header
+    tail = len(fmt.tok.encode(template[template.index(OBS) + len(OBS) :], add_special_tokens=False))
+    ids, solves, on_V, on_shown, line_pos = [], [], [], [], []
     for i in range(n):
         inst = make_instance(set_name, 1, EVAL_SEED_START + i)
         env = env_cls(mode, H=1, seed=i)
@@ -45,6 +51,9 @@ def states(set_name: str, mode: str, n: int, fmt: ChatFormat) -> dict:
         ids.append([prompt + r for r in replies])
         g, cs = env.g, env.cs
         V, shown = violations(g, cs), env.shown or []
+        pos = len(prompt) - tail - 2 if len(shown) == 1 else -1  # "{k}": k, then "}"
+        assert pos < 0 or fmt.tok.decode(prompt[pos : pos + 2]) == f"{shown[0]}}}"
+        line_pos.append(pos)
         s = np.zeros((4, 4, 10), bool)
         for r in range(4):
             for c in range(4):
@@ -58,7 +67,9 @@ def states(set_name: str, mode: str, n: int, fmt: ChatFormat) -> dict:
     # ineq prompts differ in length; left-pad so the reply tokens line up at the end
     width = max(len(x[0]) for x in ids)
     pad = fmt.tok.pad_token_id or fmt.tok.eos_token_id
+    shift = [width - len(row[0]) for row in ids]
     return {
+        "line_pos": torch.tensor([p + d if p >= 0 else -1 for p, d in zip(line_pos, shift)]),
         "ids": torch.tensor([[[pad] * (width - len(x)) + x for x in row] for row in ids]),
         "mask": torch.tensor([[[0] * (width - len(x)) + [1] * len(x) for x in row] for row in ids]),
         "solves": torch.tensor(np.array(solves)),
@@ -124,13 +135,50 @@ class HeadAblation:
         self.hooks = []
 
 
+class Knockout:
+    """Block attention from every later position to one key position, at chosen layers."""
+
+    def __init__(self, model):
+        self.layers = model.model.layers
+        self.hooks, self.mask = [], None
+
+    def on(self, lo: int, hi: int) -> None:
+        def put(_, args, kwargs):
+            kwargs["attention_mask"] = self.mask
+            return args, kwargs
+
+        self.hooks = [
+            self.layers[l].self_attn.register_forward_pre_hook(put, with_kwargs=True)
+            for l in range(lo, hi + 1)
+        ]
+
+    def set(self, pad: torch.Tensor, key: torch.Tensor) -> None:
+        """pad (N, S) 1 for real tokens; key (N,) the blocked position, -1 for none."""
+        S = pad.shape[1]
+        q = torch.arange(S, device=pad.device)
+        allowed = (q[:, None] >= q[None, :])[None] & pad.bool()[:, None, :]
+        k = key[:, None, None]
+        allowed &= ~((q[None, :, None] > k) & (q[None, None, :] == k) & (k >= 0))
+        allowed |= torch.eye(S, dtype=torch.bool, device=pad.device)  # pad rows see themselves
+        self.mask = allowed[:, None]
+
+    def off(self) -> None:
+        for h in self.hooks:
+            h.remove()
+        self.hooks, self.mask = [], None
+
+
 @torch.no_grad()
-def behavior(model, s: dict, digits: torch.Tensor, batch: int) -> dict:
+def behavior(model, s: dict, digits: torch.Tensor, batch: int, knock=None, offset=0) -> dict:
     out = {"success": [], "on_V": [], "on_shown": []}
     for b in range(0, len(s["ids"]), batch):
         ids = s["ids"][b : b + batch].to(model.device)
         mask = s["mask"][b : b + batch].to(model.device)
         B = ids.shape[0]
+        if knock:
+            key = s["line_pos"][b : b + batch].to(model.device)
+            key = torch.where(key >= 0, key + offset, key).repeat_interleave(16)
+            knock.set(mask.flatten(0, 1), key)
         logits = model(
             input_ids=ids.flatten(0, 1), attention_mask=mask.flatten(0, 1), logits_to_keep=5
         ).logits.float()
@@ -151,6 +199,7 @@ def main():
     ap.add_argument("--model", required=True)
     ap.add_argument("--group", action="append", default=[], help="name=layer.head,..., repeatable")
     ap.add_argument("--random", type=int, default=0)
+    ap.add_argument("--knockout", action="append", default=[], help="name=lo-hi[+offset]")
     ap.add_argument("--sets", nargs="+", default=["distinct", "ineq"])
     ap.add_argument("--n", type=int, default=256)
     ap.add_argument("--batch", type=int, default=16)
@@ -162,7 +211,9 @@ def main():
     dtype = torch.bfloat16 if device == "cuda" else torch.float32  # bf16 matmuls crawl on CPU
     tok = AutoTokenizer.from_pretrained(args.model)
     fmt = ChatFormat(tok, enable_thinking=False)
-    model = AutoModelForCausalLM.from_pretrained(args.model, dtype=dtype).to(device).eval()
+    # sdpa takes the boolean masks Knockout builds
+    model = AutoModelForCausalLM.from_pretrained(args.model, dtype=dtype, attn_implementation="sdpa")
+    model = model.to(device).eval()
     digits = torch.tensor([tok.convert_tokens_to_ids(str(d)) for d in range(10)], device=device)
     abl = HeadAblation(model)
     rng = np.random.default_rng(args.seed)
@@ -176,7 +227,19 @@ def main():
         pick = rng.choice(len(all_heads), size, replace=False)
         conditions[f"random{i}"] = [all_heads[j] for j in pick]
 
-    res = {"model": args.model, "conditions": {k: [list(h) for h in v] for k, v in conditions.items()}}
+    knockouts = {}
+    for k in args.knockout:
+        name, spec = k.split("=")
+        span, _, offset = spec.partition("+")
+        lo, hi = map(int, span.split("-"))
+        knockouts[name] = (lo, hi, int(offset or 0))
+    knock = Knockout(model)
+
+    res = {
+        "model": args.model,
+        "conditions": {k: [list(h) for h in v] for k, v in conditions.items()},
+        "knockouts": knockouts,
+    }
     for set_name in args.sets:
         data = {mode: states(set_name, mode, args.n, fmt) for mode in MODES}
         abl.fit_means(list(data.values()), args.batch * 4)
@@ -189,6 +252,15 @@ def main():
                     print(set_name, cond, mode, {k: round(v, 3) for k, v in r.items()}, flush=True)
             finally:
                 abl.off()
+        for name, (lo, hi, offset) in knockouts.items():
+            knock.on(lo, hi)
+            try:
+                for mode, s in data.items():
+                    r = behavior(model, s, digits, args.batch, knock, offset)
+                    res[set_name][name] = res[set_name].get(name, {}) | {mode: r}
+                    print(set_name, name, mode, {k: round(v, 3) for k, v in r.items()}, flush=True)
+            finally:
+                knock.off()
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(res, indent=1))
 
