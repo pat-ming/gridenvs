@@ -21,6 +21,37 @@ As of 2026-11-27 15:00. Aim: presentable results by Monday 11-30.
   position, from the line token on) and head patching on θ_C s0, s1 and θ_A s0, 128 pairs per set.
   Output: `$FBRL/interp/patch/`. Next: ablate the heads it finds and measure Δ_M.
 
+## 2026-11-27 · Blocking θ_C's read of the line: redundant across layers
+
+**Setup.** `fbrl.ablate --knockout`: block attention from every later position to the line's index
+token, at a chosen span of layers. The control blocks the `}` right after it. The same 256 m = 1
+states as the head ablation, on θ_C s0–s3 and θ_A s0. Output: `results/interp/knockout/`.
+
+**Results.** Under a false line, the share of first-edit probability on the shown constraint (chance
+is about 0.25 on `distinct`, 0.16 on `ineq`):
+
+| layers blocked | θ_C `distinct` (s0–s3) | θ_C `ineq` (s0–s3) |
+|---|---|---|
+| none | 1.00 | 0.98–1.00 |
+| 0–27 | 0.24–0.26 | 0.33–0.41 |
+| 0–15 | 0.88–1.00 | 0.98–1.00 |
+| 0–16 | 0.59–0.99 | 0.77–0.93 |
+| 16–20, 16–18, 17, 17–27, 18–27 | 0.99–1.00 | 0.95–1.00 |
+| control (`}`), 0–27 or 16–20 | 1.00 | 0.98–1.00 |
+
+- With every layer blocked, θ_C's success is the same with the true line, a false line and none: 12–13%
+  on `distinct` in all four seeds, which is its own line-free success.
+- θ_A is unchanged by any of it.
+
+**What it means.**
+- θ_C reads the line redundantly. Patching showed the normal read at about layer 17. But block
+  layers 17 and up, and its reads at layers 0–16 are enough to follow the line. Block 0–16, and
+  layers 17 and up mostly are. No narrow span stops it, only all of them.
+- Cut every read and θ_C is exactly its line-free self. So reliance sits on top of the line-free
+  skill and doesn't replace it. The line-free skill matches θ_A's: 12–13% on `distinct`.
+- For the proposal's Δ_M: head ablation (L0.H3) and full knockout both remove reliance. Only the
+  knockout does it without costing line-free skill, and no small set of heads or layers does it.
+
 ## 2026-11-27 · Where θ_C reads the line: patching, D(θ), head ablation
 
 **Setup.**
