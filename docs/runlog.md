@@ -21,6 +21,56 @@ As of 2026-11-27 15:00. Aim: presentable results by Monday 11-30.
   position, from the line token on) and head patching on θ_C s0, s1 and θ_A s0, 128 pairs per set.
   Output: `$FBRL/interp/patch/`. Next: ablate the heads it finds and measure Δ_M.
 
+## 2026-11-27 · Where θ_C reads the line: patching, D(θ), head ablation
+
+**Setup.**
+- Pairs of held-out states with one violated constraint, shown with the true line and with a false
+  one. The two prompts differ only in the line's index token (`fbrl.patch`).
+- Score: log P(first edit in cells only the true constraint covers) − log P(cells only the false one
+  covers). P(r, c) is exact, from teacher-forced `EDIT r ` replies.
+- D(θ): total variation between the edit distributions under the true and the false line.
+- Ablation (`fbrl.ablate`): mean-ablate heads at every position, and read exact P(r, c, v) on m = 1
+  states. That gives success, edits on a truly broken constraint, and edits on a shown one.
+
+**D(θ)**, 512 pairs: θ_0 0.02, θ_A 0.03–0.06 (8 seeds), θ_C 1.00 on `distinct` and 0.92–0.97 on
+`ineq` (4 seeds). θ_C's edit moves completely with the line.
+
+**Patching θ_C s0** (`results/interp/figs/patch_theta_C_s0.png`):
+- The line's information stays at its own token through layer 16. Patching there restores 97–100%
+  of the true-line behavior.
+- Between layers 16 and 18 it moves in one step to the reply positions, skipping the template tokens
+  in between.
+  - On `distinct` it lands where the column is predicted (0.94–1.03).
+  - On `ineq` it splits between where the row is predicted (0.46) and where the column is (0.31–0.43).
+- The strongest single heads, patching from the line token on: L0.H3 (0.86 / 0.67) and L13.H6
+  (0.66 / 0.91). The move is spread over L16–L20 (L17 sums to 0.55, L19 to 0.45), and no single
+  head moves more than 0.28.
+
+**Ablation**, 256 states. Edits on the shown constraint, under a false line:
+
+| | θ_C s0 `distinct` | θ_C s0 `ineq` | θ_C s1 `distinct` | θ_C s1 `ineq` | line-free success θ_C s0 / θ_A s0 (`distinct`, `ineq`) |
+|---|---|---|---|---|---|
+| intact | 1.00 | 1.00 | 1.00 | 1.00 | 12.8 / 12.0%, 10.6 / 13.9% |
+| L0.H3 | 0.26 | 0.16 | 0.26 | 0.16 | 9.2 / 9.4%, 3.5 / 3.2% |
+| L13.H6 | 0.95 | 0.78 | 1.00 | 0.76 | 12.7 / 11.9%, 6.9 / 13.2% |
+| L16–20 "movers" (6 heads) | 0.96 | 0.45 | 0.96 | 0.66 | 12.9 / 12.0%, 6.4 / 11.6% |
+| 8 random heads (3 draws) | 0.99–1.00 | 0.68–0.99 | 0.99–1.00 | 0.58–0.99 | 10.7–12.9%, 7.4–11.3% |
+
+Chance for "edits on the shown constraint" is about 0.26 on `distinct` and 0.16 on `ineq`.
+
+**What it means.**
+- L0.H3 is a bottleneck for the line but isn't specific to it. Removing it stops θ_C following the
+  line entirely in both seeds. It also costs line-free skill, and θ_A loses exactly as much. With
+  it gone, θ_C and θ_A behave the same. It looks like an early head that carries token identity,
+  the line's digit included.
+- L13.H6 is not the line reader. It has no effect on `distinct`, and on `ineq` it does no more than
+  a random 8-head set. `ineq` following is fragile to any ablation.
+- The move at layer 17 is spread over many heads, so knocking out six of them barely matters on
+  `distinct`.
+- So ablating whole heads stops reliance only at the cost of general skill. The clean intervention
+  is narrower: block attention from the reply positions to the line token at layers 16–20, which is
+  the one step patching found. Next.
+
 ## 2026-11-27 · More seeds: finding the column is a lottery; removing the line doesn't remove reliance
 
 **Setup.** At `beta` 0.04: θ_A and θ_D seeds 4–7 (`grpo_kl_more`, W&B group `grpo_kl`), and the true
