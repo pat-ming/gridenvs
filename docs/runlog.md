@@ -26,6 +26,35 @@ As of 2026-11-24 15:30.
   seeds 0–3 (`configs/experiments/grpo_drop.yaml`), W&B group `grpo_drop`. Question: does following a
   false line fade after step 300? Look at `fbrl.placement` and eval success by mode over steps.
 
+## 2026-11-27 · More seeds: finding the column is a lottery; removing the line doesn't remove reliance
+
+**Setup.** At `beta` 0.04: θ_A and θ_D seeds 4–7 (`grpo_kl_more`, W&B group `grpo_kl`), and the true
+line for steps 0–299 then none, seeds 0–1 (`grpo_drop`, `configs/experiments/grpo_drop.yaml`).
+Placement is from `fbrl.placement` at the last eval, and success from `harness compare`.
+
+**Results.**
+
+| arm (`beta` 0.04) | n | `distinct` none | `ineq` none | `distinct` false line | first edit follows false line (`distinct` / `ineq`) |
+|---|---|---|---|---|---|
+| θ_A | 8 | 11.9% ± 2.9 | 7.4% ± 4.6 | 10.9% | 23–30% / 16–28% |
+| θ_C | 4 | 9.6% ± 2.9 | 14.8% ± 3.9 | 0% | 99–100% / 98–100% |
+| θ_D | 8 | 12.5% ± 4.2 | 9.3% ± 4.5 | 12.2% | 24–30% / 19–38% |
+| true → none at 300 | 2 | 12.1% | 11.7% | 0.8% | 88%, 98% / 65%, 93% |
+
+- None of the 8 new seeds learned to find the broken column on its own (`find_alone` 23–36% against
+  97% for θ_D s1 at `beta` 0.1). Counting every θ_A and θ_D run so far, 1 of 22 did.
+- θ_C's `ineq` lead over θ_A holds with 8 θ_A seeds: 14.8% against 7.4% line-free.
+- After 300 steps with no line, the drop runs still follow a false line about as much as θ_C does.
+
+**What it means.**
+- θ_D s1 at `beta` 0.1 is a lucky seed, not something the noise line causes. It stays the positive
+  control for interp, but it says nothing about the arms.
+- Training with the true line didn't cost line-free skill. On `ineq` it helped. That's the opposite
+  of H1's prediction, at least at 0.6B, where no arm builds detection (see the probes).
+- Taking the line away doesn't undo reliance. Without a line there's nothing to follow, so nothing
+  pushes the habit down. Recovering would take false lines in training, not missing ones. That's the
+  next recoverability run.
+
 ## 2026-11-24 · Probes for V(s): only the θ_D that learned to find the column carries it
 
 **Setup.** I fit a logistic probe for each constraint bit at each layer, on the residual at the last
