@@ -1,0 +1,7 @@
+# Layered on grpo_kl.yaml: the true line for the first half, then a noise line. Unlike grpo_drop, following the line stops paying.
+experiment:
+  name: "grpo_recover300_kl{grpo.beta}_s{experiment.seed}"
+  notes: "theta_C then theta_D: true line for steps 0-299, noise line for 300-599, KL beta {grpo.beta}, seed {experiment.seed}. Does reliance come off once following the line stops paying, and how fast?"
+
+env:
+  mode: [[0, "true"], [300, noise]]

@@ -5,26 +5,21 @@ in `results/runs/`, and everything is also in W&B (project `fbrl`).
 
 ## In flight
 
-As of 2026-11-24 15:30.
+As of 2026-11-27 15:00. Aim: presentable results by Monday 11-30.
 
-- **1.7B warm start** (done): `$FBRL/models/sft-qwen3-1.7b` passes the gate. On `distinct`, success is
-  about 10% and `mixed` about 0.6; on `ineq`, success is about 5% and `mixed` about 0.4. `stopped` and
-  `parse` are about 1.
-- **Interp groundwork** (`acts` 397205, hit its 2h limit on the last model): every file is in
-  `$FBRL/interp/<model>/<set>_<mode>.pt`, except that `kl10_noise_s1` has only `distinct_none`.
-- **1.7B GRPO** (W&B group `grpo17`).
-  - The measuring run (397233_0, θ_A s0) uses 31 GB peak on an A6000 at 19 s/step, about 3 h for
-    600 steps.
-  - The other 8 runs (397269, `$FBRL/sweeps/grpo17_rest.txt`) run two per 80 GB A100 with
-    `vllm_gpu_memory_utilization` 0.15, on 4 GPUs with a 12h limit.
-  - At 15:40 I cancelled the measuring run at step 99 to free a GPU, so θ_A s0 needs a rerun. 397269
-    and `grpo_drop` 397232_1 are on hold (`scontrol release` when GPUs are free).
-- **More 0.6B seeds** (`grpo_kl_more` 397231, 4 GPUs, two runs each): θ_A and θ_D at `beta` 0.04,
-  seeds 4–7, in W&B group `grpo_kl`. Two questions: is θ_C's `ineq` lead over θ_A real, and does
-  another θ_D learn to find the column itself?
-- **Line removed halfway** (`grpo_drop` 397232, 2 GPUs): the true line for steps 0–299, then none,
-  seeds 0–3 (`configs/experiments/grpo_drop.yaml`), W&B group `grpo_drop`. Question: does following a
-  false line fade after step 300? Look at `fbrl.placement` and eval success by mode over steps.
+- **Recoverability** (`grpo_recover` 407028, 2 GPUs, two runs each): the true line for steps 0–299, then
+  noise, seeds 0–3 (`configs/experiments/grpo_recover.yaml`), W&B group `grpo_recover`. Question: does
+  following a false line come off once following stops paying, and how fast? Compare against
+  `grpo_drop` (true line, then none). Look at `follow_false` per eval step.
+- **Line removed halfway, seeds 2–3** (`grpo_drop` 397232_1).
+- **1.7B GRPO** (397269, 4 A100s, two runs each, plus 407029 for θ_A s0 alone): 3 arms × 3 seeds at
+  `beta` 0.04, W&B group `grpo17`. Question: does any arm learn to find the column on its own more
+  often at 1.7B?
+- **D(θ)** (`dtheta` 407044, A100 shard): `fbrl.patch --no-patch` on θ_0 and every `grpo_kl`/`grpo_drop`
+  model, 512 single-violation pairs per set. Output: `$FBRL/interp/dtheta/patch_<model>.pt`.
+- **Where θ_C reads the line** (`patch` 407045, A100 shard): `fbrl.patch` residual patching (layer ×
+  position, from the line token on) and head patching on θ_C s0, s1 and θ_A s0, 128 pairs per set.
+  Output: `$FBRL/interp/patch/`. Next: ablate the heads it finds and measure Δ_M.
 
 ## 2026-11-27 · More seeds: finding the column is a lottery; removing the line doesn't remove reliance
 
