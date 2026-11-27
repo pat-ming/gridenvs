@@ -5,21 +5,48 @@ in `results/runs/`, and everything is also in W&B (project `fbrl`).
 
 ## In flight
 
-As of 2026-11-27 15:00. Aim: presentable results by Monday 11-30.
+As of 2026-11-27 23:30. Aim: presentable results by Monday 11-30.
 
-- **Recoverability** (`grpo_recover` 407028, 2 GPUs, two runs each): the true line for steps 0–299, then
-  noise, seeds 0–3 (`configs/experiments/grpo_recover.yaml`), W&B group `grpo_recover`. Question: does
-  following a false line come off once following stops paying, and how fast? Compare against
-  `grpo_drop` (true line, then none). Look at `follow_false` per eval step.
-- **Line removed halfway, seeds 2–3** (`grpo_drop` 397232_1).
-- **1.7B GRPO** (397269, 4 A100s, two runs each, plus 407029 for θ_A s0 alone): 3 arms × 3 seeds at
-  `beta` 0.04, W&B group `grpo17`. Question: does any arm learn to find the column on its own more
-  often at 1.7B?
-- **D(θ)** (`dtheta` 407044, A100 shard): `fbrl.patch --no-patch` on θ_0 and every `grpo_kl`/`grpo_drop`
-  model, 512 single-violation pairs per set. Output: `$FBRL/interp/dtheta/patch_<model>.pt`.
-- **Where θ_C reads the line** (`patch` 407045, A100 shard): `fbrl.patch` residual patching (layer ×
-  position, from the line token on) and head patching on θ_C s0, s1 and θ_A s0, 128 pairs per set.
-  Output: `$FBRL/interp/patch/`. Next: ablate the heads it finds and measure Δ_M.
+- **1.7B GRPO** (W&B group `grpo17`): θ_D s2 (397269_3), θ_C s2 rerun alone (407330), θ_A s0
+  (407029, queued). Six done, see the 1.7B entry below.
+- **1.7B I(θ) probes** (`acts17` 407331, A6000 shard): line-free residuals for θ_0 and the six
+  finished 1.7B models, written to `$FBRL/interp17/`. Then run `fbrl.probe` on them.
+- **Recoverability** (`grpo_recover`): seeds 2–3 done, seeds 0–1 (407028_0) running.
+  **Line removed halfway** (`grpo_drop`): seeds 2–3 (397232_1) running. Compare `follow_false` per
+  eval step (`fbrl.placement --steps`).
+- **Patching θ_C s1 and θ_A s0** (`patch` 407045): θ_C s0 is done, see "Where θ_C reads the line".
+
+## 2026-11-27 · 1.7B: without the line the model learns to find the broken column; with it, it doesn't
+
+**Setup.** Qwen3-1.7B-Base after the same SFT warm start (`$FBRL/models/sft-qwen3-1.7b`), then the
+`grpo_kl` recipe (`beta` 0.04, lr 1e-5, 600 steps) on `distinct`/`ineq`. W&B group `grpo17`.
+- Six runs finished: θ_A s1–s2, θ_C s0–s1, θ_D s0–s1.
+- θ_C s2 crashed at vLLM startup (no memory left for its cache with two runs on one A100) and is
+  rerunning alone (407330). θ_A s0 is queued (407029). θ_D s2 is running.
+
+**Results.** Last eval:
+
+| | θ_A s1, s2 | θ_D s0, s1 | θ_C s0, s1 |
+|---|---|---|---|
+| `distinct` success, no line | 100%, 100% | 100%, 100% | 34%, 13% |
+| `distinct` success, true line | 94%, 98% | 100%, 100% | 100%, 41% |
+| `distinct` success, false line | 99%, 100% | 100%, 100% | 0%, 0% |
+| `distinct` first edit on a broken constraint, no line | 100% | 98–100% | 29–32% |
+| `distinct` first edit follows a false line | 4–5% | 4–5% | 100% |
+| `ineq` success, no line | 10%, 16% | 21%, 21% | 23%, 22% |
+| `ineq` first edit follows a false line | 36% | 39–40% | 100% |
+
+**What it means.**
+- H1 holds at 1.7B on `distinct`. Without a usable line (θ_A, or θ_D with noise), every run learned
+  to find the duplicated column itself and ignores a false line. With the true line, neither θ_C run
+  learned this: line-free edits stay at chance, and it follows a false line every time.
+- At 0.6B, 1 of 22 non-θ_C runs learned it, so there was nothing for the line to suppress. Model
+  size decides whether the skill is learnable, and the line decides whether it gets learned.
+- On `ineq` no arm learns to find violations at 1.7B either. θ_C stays slightly ahead line-free, as
+  at 0.6B.
+
+**Next.** I(θ) probes at 1.7B (`acts17` 407331 caches line-free residuals): do θ_A/θ_D carry the
+broken column in their activations and θ_C not? Then the remaining seeds.
 
 ## 2026-11-27 · Blocking θ_C's read of the line: redundant across layers
 
