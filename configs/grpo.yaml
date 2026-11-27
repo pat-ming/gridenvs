@@ -28,7 +28,7 @@ eval:
   temperature: 1.0
 
 tracking:
-  wandb: {enabled: true, project: fbrl, group: dev}
+  wandb: {enabled: true, project: fbrl, group: dev, log_model: true}
   best: {metric: null}
   rollout_table_every: 25
 

@@ -22,7 +22,7 @@ demos:
   modes: [none, "true", noise, residual]
 
 tracking:
-  wandb: {enabled: true, project: fbrl, group: sft}
+  wandb: {enabled: true, project: fbrl, group: sft, log_model: true}
   best: {metric: null}
 
 sft:

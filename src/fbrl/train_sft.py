@@ -132,6 +132,7 @@ def main() -> None:
         model.save_pretrained(str(final))
         tok.save_pretrained(str(final))
         run.summary["final_checkpoint"] = str(final)
+        run.log_model(final)
         if export := exp.get("export"):
             shutil.copytree(final, os.path.expandvars(export), dirs_exist_ok=True)
             run.summary["exported_to"] = os.path.expandvars(export)

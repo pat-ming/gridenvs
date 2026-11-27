@@ -197,6 +197,13 @@ class Run:
         self.event("checkpoint", step=step, path=str(path), best=self.is_best)
         return path
 
+    def log_model(self, path: str | Path) -> None:
+        """Upload a model directory to W&B, if tracking.wandb.log_model is on."""
+        if not (self.wandb and self.cfg["tracking"]["wandb"].get("log_model")):
+            return
+        self._wandb_call(upload_model, self.wandb, Path(path), self.name)
+        self.event("model_uploaded", path=str(path))
+
     def finish(self, summary: dict | None = None, status: str = "finished") -> dict:
         global _current
         if _current is self:
@@ -327,6 +334,21 @@ def event(kind: str, **data) -> None:
 def finish(summary: dict | None = None, status: str = "finished") -> None:
     if _current:
         _current.finish(summary, status)
+
+
+def upload_model(wandb_run, path: Path, name: str) -> None:
+    """Log path as model artifact `name` (aliases latest, final) from wandb_run.
+    The upload finishes when the run does."""
+    import wandb
+
+    art = wandb.Artifact(artifact_name(name), type="model")
+    # immutable + skip_cache: no staging copy of multi-GB weights on local disk
+    art.add_dir(str(path), skip_cache=True, policy="immutable")
+    wandb_run.log_artifact(art, aliases=["final"])
+
+
+def artifact_name(name: str) -> str:
+    return re.sub(r"[^\w.-]", "-", name)
 
 
 def expand_name(template: str, cfg: dict) -> str:

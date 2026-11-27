@@ -101,6 +101,18 @@ diagnosis as input, diagnosis as a target); coding tasks.
   - `records/rollouts.jsonl`, every training rollout.
 
   W&B also has rollout tables every 25 steps.
+- **Model weights on W&B:** the final weights of every `grpo_kl` and `grpo_drop` run are a `model`
+  artifact named after the run (`grpo_kl0.04_none_s0`, `grpo_kl0.1_noise_s1`, ...), and the two warm
+  starts are `sft-qwen3-0.6b` and `sft-qwen3-1.7b`. Each one is a Hugging Face model folder:
+
+  ```sh
+  wandb artifact get cse-5100-fall-2026/fbrl/grpo_kl0.1_noise_s1:final --root models/grpo_kl0.1_noise_s1
+  ```
+
+  On the cluster, set `WANDB_CACHE_DIR` to somewhere under `/tmp` first. W&B's cache fails on the
+  project filesystem. New GRPO and SFT runs upload their final weights when they finish
+  (`tracking.wandb.log_model`), and `harness upload RUN...` adds a run that finished before that.
+  Intermediate checkpoints (`checkpoint-100` to `checkpoint-600`) stay on the cluster.
 - **Models worth looking inside first:** θ_C and θ_A at seed 0 of `grpo_kl0.04`, and θ_D seed 1 of
   `grpo_kl0.1`. That θ_D is the only model that learned to find the broken column on its own (see the
   run log).

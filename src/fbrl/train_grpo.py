@@ -168,7 +168,9 @@ def main() -> None:
         )
         evaluator.trainer = trainer
         trainer.train(resume_from_checkpoint=exp.get("resume_checkpoint"))
-        trainer.save_model(str(run.dir / "checkpoints" / "final"))
+        final = run.dir / "checkpoints" / "final"
+        trainer.save_model(str(final))
+        run.log_model(final)
 
 
 if __name__ == "__main__":

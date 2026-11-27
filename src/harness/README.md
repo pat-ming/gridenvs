@@ -43,7 +43,7 @@ All keys are optional.
 experiment: {name, tags, notes, output_dir} # output_dir defaults to $HARNESS_RUNS_DIR, else runs/
                                             # name, tags and notes can use config values: "eval_{model.name}"
 tracking:
-  wandb: {enabled, project, entity, group, mode}
+  wandb: {enabled, project, entity, group, mode, log_model}  # log_model: run.log_model(dir) uploads it
   best: {metric: eval/acc, mode: max}       # save_checkpoint also writes best.pt on improvement
   keep_last_n_checkpoints: 0                # 0 keeps all
   system_interval: 10                       # GPU sampling period in seconds, 0 disables
@@ -85,8 +85,11 @@ harness show RUN                             # meta.json and summary.json
 harness tail RUN [-f] [-m reward,sys/gpu0]   # print events, optionally follow
 harness compare --metrics a,b [--group-by env.condition,model.name] [--where k=v] [--csv out.csv]
 harness sweep --grid experiment.seed=0,1,2 --grid config=a.yaml,b.yaml
+harness upload RUN... [--path checkpoints/final]   # model dir -> W&B artifact named after the run
 ```
 
 `RUN` is a path or a substring of a run name. `--group-by` reports mean ± std per combination of config values, and `--where` keeps runs whose config matches. Output is Markdown.
+
+`upload` (and `run.log_model(dir)` during a run) logs the directory as a W&B `model` artifact with alias `final`, attached to the run's own W&B run. `upload` resumes that run from `meta.json` and skips runs whose artifact already exists, so it's safe to point at a whole directory of runs.
 
 `sweep` prints one line of arguments per point of the grid (`--set key=value`, or `--config file` for the key `config`). A launcher runs the script once per line; on Slurm, `cluster/remote.sh sweep` submits the lines as an array job.

@@ -6,6 +6,7 @@ of a run name (newest match wins). --root defaults to $HARNESS_RUNS_DIR, else ru
 import csv
 import itertools
 import json
+import os
 import shlex
 import statistics
 import time
@@ -145,6 +146,45 @@ def sweep(
                 ["--config", value] if key == "config" else ["--set", f"{key}={value}"]
             )
         typer.echo(shlex.join(args))
+
+
+@app.command()
+def upload(
+    run: Annotated[list[str], typer.Argument(help="Runs (paths or name substrings).")],
+    path: Annotated[str, typer.Option(help="Model dir inside the run.")] = (
+        "checkpoints/final"
+    ),
+    root: Root = None,
+) -> None:
+    """Upload each run's model to W&B as a model artifact named after the run,
+    logged from the run's own W&B run. Skips runs already uploaded."""
+    import wandb
+
+    from harness.run import artifact_name, expand_name, upload_model
+
+    api = wandb.Api()
+    for query in run:
+        r = find(query, root)
+        track = r.cfg("tracking.wandb", {})
+        entity = track.get("entity") or os.environ.get("WANDB_ENTITY")
+        entity = entity or api.default_entity
+        project = track.get("project", "harness")
+        name = artifact_name(expand_name(r.cfg("experiment.name", r.name), r.config))
+        try:
+            api.artifact(f"{entity}/{project}/{name}:final")
+            typer.echo(f"{name}: already uploaded")
+            continue
+        except wandb.errors.CommError:
+            pass
+        with wandb.init(
+            id=r.meta["wandb_id"],
+            entity=entity,
+            project=project,
+            dir=r.dir,
+            resume="must",
+        ) as w:
+            upload_model(w, r.dir / path, name)
+        typer.echo(f"{name}: uploaded from {r.dir / path}")
 
 
 def group(selected: list[RunView], keys: list[str], metrics: list[str]) -> list[dict]:

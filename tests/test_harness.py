@@ -144,3 +144,23 @@ def test_cli_sweep_is_the_cartesian_product():
         "--config m/b.yaml --set env.mode=none",
         "--config m/b.yaml --set env.mode=true",
     ]
+
+
+def test_log_model_uploads_only_when_enabled(tmp_path, monkeypatch):
+    pytest.importorskip("wandb")
+    monkeypatch.setenv("WANDB_MODE", "offline")
+    model = tmp_path / "final"
+    model.mkdir()
+    (model / "config.json").write_text("{}")
+    for enabled in (False, True):
+        cfg = {
+            "experiment": {"name": f"m{enabled}", "output_dir": str(tmp_path)},
+            "tracking": {
+                "wandb": {"enabled": True, "project": "t", "log_model": enabled},
+                "system_interval": 0,
+            },
+        }
+        with Run(cfg) as run:
+            run.log_model(model)
+        uploaded = list(harness.load(run.dir).events("model_uploaded"))
+        assert len(uploaded) == enabled

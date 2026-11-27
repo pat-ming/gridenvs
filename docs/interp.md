@@ -24,7 +24,8 @@ prompts.
   Six more at `beta` 0.1 (`grpo_kl0.1_*`, 2 seeds per arm). Among those, θ_D seed 1 is the only model
   that learned to find the broken column on its own: 97% of its line-free edits land there, against
   about 27% elsewhere. That makes it the natural positive control for the I(θ) probes and the J-lens.
-  Where everything else lives (W&B groups, repo vs cluster): `docs/next.md`.
+  Final weights for all of these are also W&B model artifacts named after the run. Where everything
+  else lives (W&B groups, repo vs cluster, how to fetch a model): `docs/next.md`.
 - Prompts: `fbrl.grid` builds the exact token sequence the model saw. `ChatFormat(tok)` with
   `start(env, inst, fmt)` gives an `Episode` with `prompt_ids`. Instances come from
   `load_env("grid4")[1](set_name, m, seed)`; use seeds from `EVAL_SEED_START` up so nothing overlaps
