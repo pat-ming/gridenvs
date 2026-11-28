@@ -9,7 +9,6 @@ As of 2026-11-28 morning. Aim: presentable results by Monday 11-30.
 
 - **θ_C s3, s4 at 1.7B** (`grpo17` 407896, 407897, one GPU each): two more seeds for the
   latent-check result, then the same continuation and decision-probe tests.
-- **Patching θ_C s0 and s1 at 1.7B** (`patch17` 407494), output in `$FBRL/interp17/patch/`.
 - Results page: build scripts in `$FBRL/report/`; rebuild with `build_data.py` and `render.py`.
 
 ## 2026-11-28 · Under a false line θ_C still computes the true column, and the line wins
@@ -37,7 +36,10 @@ token through layer 16 (0.92 recovery on `distinct`), then moves to the column-d
 over layers 17–21 (line token 0.77 / 0.48 / 0.11 at L17 / L18 / L20), a little later and more
 spread out than 0.6B's one step at 16–18. The top heads have the same indices as at 0.6B: L0.H3
 (0.86 `distinct`, 0.72 `ineq`) and L13.H6 (0.70 `ineq`). Separate model, different numbers
-elsewhere; not interpreted yet. θ_C s1 still running.
+elsewhere; not interpreted yet. θ_C s1 agrees: the line token holds 0.78 at L16 and the move to
+the column-decision position runs over L17–20 (0.23 / 0.70 / 0.76 / 0.91), top heads L0.H3 (0.76
+`distinct`, 0.73 `ineq`) and L13.H6 (0.62 `ineq`). Files in `results/interp/patch17/`, figures in
+`results/interp/figs/patch17/`.
 
 ## 2026-11-28 · θ_C builds the check slowly without using it; θ_A builds and uses it at once
 
