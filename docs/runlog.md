@@ -30,8 +30,22 @@ column) under a false line:
 Single-layer gains add up to about the full effect and are spread over layers 2–16 (top: 2, 10–15
 for s0; 9–13 and 2 for s4). The late layers, where the line arrives (17–20), don't change. Since
 the broken column was already decodable at the decision in θ_C, the continuation seems to change
-how it is written upstream so that unchanged late layers act on it. A guess, not tested. The same
-early-layer splice also lowers following a false line.
+how it is written upstream so that unchanged late layers act on it. The same early-layer splice
+also lowers following a false line.
+
+**Probe transfer** (`fbrl.transfer`, 408485, 408486, `results/interp/splice/transfer_*.json`): fit
+the decision-position probe for the broken column on one model, score it unchanged on the other.
+Layers 18–28, balanced accuracy:
+
+| | θ_C → θ_C | θ_C → continued | continued → continued | continued → θ_C |
+|---|---|---|---|---|
+| s0 | 0.99 | 0.95–1.00 | 1.00 | 0.57–0.78 |
+| s4 | 0.98–0.99 | 0.92–0.98 | 1.00 | 0.80–0.87 |
+
+Asymmetric: θ_C's direction survives in the continued model, and the continued model adds one θ_C
+lacks. That fits the splice: early layers start writing the column in a new direction the
+unchanged late layers act on. The gap is smaller for s4, which already used its check 54% of the
+time.
 
 ## 2026-11-28 · The prediction held: the probe ranks how fast each θ_C seed checks again
 

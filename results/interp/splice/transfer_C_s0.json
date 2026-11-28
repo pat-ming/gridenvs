@@ -1,0 +1,209 @@
+{
+ "base": "/engrfs/project/netanel.raviv/motti_k/fbrl/runs/grpo17_kl0.04_true_s0_20261127_182924_407030/checkpoints/final",
+ "donor": "/engrfs/project/netanel.raviv/motti_k/fbrl/runs/grpo17_cont_none_fromC_s0_20261128_033131_407485/checkpoints/final",
+ "rows": [
+  {
+   "layer": 0,
+   "base->base": 0.5,
+   "base->donor": 0.5,
+   "donor->base": 0.5,
+   "donor->donor": 0.5
+  },
+  {
+   "layer": 1,
+   "base->base": 0.4841170907020569,
+   "base->donor": 0.49219655990600586,
+   "donor->base": 0.4911879301071167,
+   "donor->donor": 0.4745890200138092
+  },
+  {
+   "layer": 2,
+   "base->base": 0.5165901780128479,
+   "base->donor": 0.5207265615463257,
+   "donor->base": 0.5122025012969971,
+   "donor->donor": 0.509615421295166
+  },
+  {
+   "layer": 3,
+   "base->base": 0.520951509475708,
+   "base->donor": 0.5067965984344482,
+   "donor->base": 0.5053080320358276,
+   "donor->donor": 0.5319439172744751
+  },
+  {
+   "layer": 4,
+   "base->base": 0.5741961002349854,
+   "base->donor": 0.5139230489730835,
+   "donor->base": 0.5036037564277649,
+   "donor->donor": 0.5753663778305054
+  },
+  {
+   "layer": 5,
+   "base->base": 0.6525843143463135,
+   "base->donor": 0.5959514379501343,
+   "donor->base": 0.5306159853935242,
+   "donor->donor": 0.6842759251594543
+  },
+  {
+   "layer": 6,
+   "base->base": 0.6518329977989197,
+   "base->donor": 0.5207943320274353,
+   "donor->base": 0.5186201930046082,
+   "donor->donor": 0.6564104557037354
+  },
+  {
+   "layer": 7,
+   "base->base": 0.6646679639816284,
+   "base->donor": 0.5261602401733398,
+   "donor->base": 0.5132632255554199,
+   "donor->donor": 0.6773313879966736
+  },
+  {
+   "layer": 8,
+   "base->base": 0.7150894999504089,
+   "base->donor": 0.558423638343811,
+   "donor->base": 0.5344986319541931,
+   "donor->donor": 0.7135100364685059
+  },
+  {
+   "layer": 9,
+   "base->base": 0.7430416345596313,
+   "base->donor": 0.5827487111091614,
+   "donor->base": 0.5702033042907715,
+   "donor->donor": 0.741321325302124
+  },
+  {
+   "layer": 10,
+   "base->base": 0.7522799372673035,
+   "base->donor": 0.5330825448036194,
+   "donor->base": 0.5652258396148682,
+   "donor->donor": 0.753478467464447
+  },
+  {
+   "layer": 11,
+   "base->base": 0.7261883020401001,
+   "base->donor": 0.501329779624939,
+   "donor->base": 0.5917463302612305,
+   "donor->donor": 0.7340430021286011
+  },
+  {
+   "layer": 12,
+   "base->base": 0.7614333033561707,
+   "base->donor": 0.5224596261978149,
+   "donor->base": 0.5430793762207031,
+   "donor->donor": 0.7769124507904053
+  },
+  {
+   "layer": 13,
+   "base->base": 0.846359372138977,
+   "base->donor": 0.5554333329200745,
+   "donor->base": 0.5644515752792358,
+   "donor->donor": 0.8410396575927734
+  },
+  {
+   "layer": 14,
+   "base->base": 0.8506814241409302,
+   "base->donor": 0.5557217597961426,
+   "donor->base": 0.5728185176849365,
+   "donor->donor": 0.8945309519767761
+  },
+  {
+   "layer": 15,
+   "base->base": 0.8681399822235107,
+   "base->donor": 0.5249793529510498,
+   "donor->base": 0.5435622930526733,
+   "donor->donor": 0.9483591318130493
+  },
+  {
+   "layer": 16,
+   "base->base": 0.9334396123886108,
+   "base->donor": 0.7701132297515869,
+   "donor->base": 0.6521216630935669,
+   "donor->donor": 0.9955379962921143
+  },
+  {
+   "layer": 17,
+   "base->base": 0.9863531589508057,
+   "base->donor": 0.9984796047210693,
+   "donor->base": 0.8647829294204712,
+   "donor->donor": 0.9985795617103577
+  },
+  {
+   "layer": 18,
+   "base->base": 0.9944969415664673,
+   "base->donor": 0.9998354911804199,
+   "donor->base": 0.784142255783081,
+   "donor->donor": 1.0
+  },
+  {
+   "layer": 19,
+   "base->base": 0.9913305044174194,
+   "base->donor": 0.9993314743041992,
+   "donor->base": 0.771355926990509,
+   "donor->donor": 1.0
+  },
+  {
+   "layer": 20,
+   "base->base": 0.989985466003418,
+   "base->donor": 0.9947153329849243,
+   "donor->base": 0.7305585741996765,
+   "donor->donor": 1.0
+  },
+  {
+   "layer": 21,
+   "base->base": 0.9904382824897766,
+   "base->donor": 0.9963037967681885,
+   "donor->base": 0.6606079339981079,
+   "donor->donor": 1.0
+  },
+  {
+   "layer": 22,
+   "base->base": 0.9909274578094482,
+   "base->donor": 0.9906830787658691,
+   "donor->base": 0.6124683618545532,
+   "donor->donor": 1.0
+  },
+  {
+   "layer": 23,
+   "base->base": 0.9911519289016724,
+   "base->donor": 0.9894396066665649,
+   "donor->base": 0.5891371965408325,
+   "donor->donor": 1.0
+  },
+  {
+   "layer": 24,
+   "base->base": 0.9924014806747437,
+   "base->donor": 0.9662899971008301,
+   "donor->base": 0.5758870840072632,
+   "donor->donor": 1.0
+  },
+  {
+   "layer": 25,
+   "base->base": 0.9927303791046143,
+   "base->donor": 0.9626656174659729,
+   "donor->base": 0.5691542625427246,
+   "donor->donor": 1.0
+  },
+  {
+   "layer": 26,
+   "base->base": 0.9924626350402832,
+   "base->donor": 0.9467917084693909,
+   "donor->base": 0.5707475543022156,
+   "donor->donor": 1.0
+  },
+  {
+   "layer": 27,
+   "base->base": 0.9929952621459961,
+   "base->donor": 0.9569197297096252,
+   "donor->base": 0.5802139043807983,
+   "donor->donor": 1.0
+  },
+  {
+   "layer": 28,
+   "base->base": 0.9909171462059021,
+   "base->donor": 0.9583911299705505,
+   "donor->base": 0.5707983374595642,
+   "donor->donor": 1.0
+  }
+ ]
+}
