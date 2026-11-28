@@ -10,6 +10,29 @@ As of 2026-11-28 morning. Aim: presentable results by Monday 11-30.
 - Nothing running. Next candidates are on the results page under Next.
 - Results page: build scripts in `$FBRL/report/`; rebuild with `build_data.py` and `render.py`.
 
+## 2026-11-28 · Splicing: what switches the check on is in layers 0–16, not the readout
+
+`fbrl.splice` (new; `splice17` 408392, 408393, `results/interp/splice/`): copy decoder layers from
+θ_C's no-line continuation (200 steps, same network) into θ_C, and read the column probabilities
+at the decision position on 256 m = 1 `distinct` states. P(broken column) with no line / P(shown
+column) under a false line:
+
+| splice | θ_C s0 | θ_C s4 |
+|---|---|---|
+| none | 32% / 98% | 54% / 98% |
+| all layers | 91% / 61% | 95% / 63% |
+| all attention only | 58% / 94% | 80% / 94% |
+| all MLP only | 71% / 87% | 87% / 87% |
+| layers 0–16 | 88% / 67% | 91% / 66% |
+| layers 17–27 | 38% / 99% | 59% / 98% |
+| best single layer | +4 pts | +6 pts |
+
+Single-layer gains add up to about the full effect and are spread over layers 2–16 (top: 2, 10–15
+for s0; 9–13 and 2 for s4). The late layers, where the line arrives (17–20), don't change. Since
+the broken column was already decodable at the decision in θ_C, the continuation seems to change
+how it is written upstream so that unchanged late layers act on it. A guess, not tested. The same
+early-layer splice also lowers following a false line.
+
 ## 2026-11-28 · The prediction held: the probe ranks how fast each θ_C seed checks again
 
 `grpo17c` 408327 finished. Steps to 80% find-alone on `distinct`, and follow-false at step 200:
