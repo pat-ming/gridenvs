@@ -12,6 +12,33 @@ As of 2026-11-28 morning. Aim: presentable results by Monday 11-30.
 - **Patching θ_C s0 and s1 at 1.7B** (`patch17` 407494), output in `$FBRL/interp17/patch/`.
 - Results page: build scripts in `$FBRL/report/`; rebuild with `build_data.py` and `render.py`.
 
+## 2026-11-28 · Under a false line θ_C still computes the true column, and the line wins
+
+`fbrl.decision --mode counterfactual` (`dec17cf` 408227, `results/interp/decision/decision17_cf.json`):
+the decision-position probe on `distinct` states shown a false line. New `shown` label, the column
+the line names.
+
+| model | P(shown column) | P(true broken column) | probe, true column: best (exact, layer) | last layer |
+|---|---|---|---|---|
+| θ_0 | 25% | 25% | 0.80 (0.51, L21) | 0.75 |
+| θ_C s0 | 98% | 1% | 0.99 (0.96, L23) | 0.99 |
+| θ_C s2 | 100% | 0% | 0.93 (0.83, L28) | 0.93 |
+| θ_C s1 | 100% | 0% | 0.84 (0.60, L17) | 0.76 |
+| θ_A s1 | 2% | 93% | 1.00 (1.00, L17) | 1.00 |
+| θ_D s0 | 2% | 94% | 1.00 (1.00, L16) | 1.00 |
+
+θ_C s0 carries the true broken column, linearly readable, right up to the unembedding while
+putting 1% on it: the line overrides a check the model has finished. Knowing the shown column rules
+out one of four, so θ_0's 0.80 (0.51 exact) is the baseline, not 0.5. s2 is the same at 0.93; s1's
+signal peaks mid-network and fades.
+
+**Patching θ_C s0 at 1.7B** (`patch17` 407494): the 0.6B picture again. The line stays at its own
+token through layer 16 (0.92 recovery on `distinct`), then moves to the column-decision position
+over layers 17–21 (line token 0.77 / 0.48 / 0.11 at L17 / L18 / L20), a little later and more
+spread out than 0.6B's one step at 16–18. The top heads have the same indices as at 0.6B: L0.H3
+(0.86 `distinct`, 0.72 `ineq`) and L13.H6 (0.70 `ineq`). Separate model, different numbers
+elsewhere; not interpreted yet. θ_C s1 still running.
+
 ## 2026-11-28 · θ_C builds the check slowly without using it; θ_A builds and uses it at once
 
 `fbrl.decision` on checkpoints every 100 steps (`dec17ckpt` 407895,

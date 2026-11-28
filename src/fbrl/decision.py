@@ -1,10 +1,11 @@
 """Probes at the position where the column is chosen, the " " after "EDIT r ".
 
 fbrl.probe reads the last prompt token, but decodable there need not mean used: removing that
-subspace barely moves θ_A (fbrl.steer). Here, on line-free m = 1 states, the residual at the column
-decision position for every row r is probed per layer for two labels:
+subspace barely moves θ_A (fbrl.steer). Here, on m = 1 states (line-free unless --mode says
+otherwise), the residual at the column decision position for every row r is probed per layer for:
     broken   the truly violated column
     chosen   the column the model itself puts most probability on
+    shown    the column the line names, when there is one
 A model that checks has `broken` decodable at the decision position and `chosen` tracking it. One
 that computes the column upstream and never routes it would have `broken` low here.
 
@@ -69,13 +70,21 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--model", action="append", required=True, help="name=path")
     ap.add_argument("--set", default="distinct")
+    ap.add_argument(
+        "--mode", default="none", help="line mode, e.g. none, counterfactual"
+    )
     ap.add_argument("--n-fit", type=int, default=768)
     ap.add_argument("--n-eval", type=int, default=256)
     ap.add_argument("--batch", type=int, default=16)
     ap.add_argument("--out", type=Path, required=True)
     args = ap.parse_args()
 
-    res = {"set": args.set, "n_fit": args.n_fit, "n_eval": args.n_eval}
+    res = {
+        "set": args.set,
+        "mode": args.mode,
+        "n_fit": args.n_fit,
+        "n_eval": args.n_eval,
+    }
     for spec in args.model:
         name, path = spec.split("=", 1)
         tok = AutoTokenizer.from_pretrained(path)
@@ -86,7 +95,7 @@ def main():
             [tok.convert_tokens_to_ids(str(d)) for d in range(10)], device="cuda"
         )
         # the eval states come first so they match fbrl.steer / fbrl.ablate's instances
-        s = states(args.set, "none", args.n_eval + args.n_fit, fmt)
+        s = states(args.set, args.mode, args.n_eval + args.n_fit, fmt)
         order = torch.cat(
             [torch.arange(args.n_eval, len(s["ids"])), torch.arange(args.n_eval)]
         )
@@ -94,6 +103,11 @@ def main():
         X, p_c = collect(model, s, digits, args.batch)
         broken = s["on_V"][:, 0].float().argmax(-1)[:, None].expand(-1, 4)
         chosen = p_c.argmax(-1)
+        labels = {"broken": broken, "chosen": chosen}
+        if s["on_shown"].any():
+            labels["shown"] = (
+                s["on_shown"][:, 0].float().argmax(-1)[:, None].expand(-1, 4)
+            )
         ev = slice(args.n_fit, None)
         res[name] = {
             "model": path,
@@ -101,13 +115,12 @@ def main():
             "chosen_is_broken": (chosen[ev] == broken[ev]).float().mean().item(),
             # (n_eval, row, column); eval state i is instance EVAL_SEED_START + i, m = 1
             "p_c_eval": p_c[ev].tolist(),
-            "broken": probe(X, broken, args.n_fit),
-            "chosen": probe(X, chosen, args.n_fit),
+            **{k: probe(X, y, args.n_fit) for k, y in labels.items()},
         }
-        best = {
-            k: max(res[name][k], key=lambda r: r["balanced_acc"])
-            for k in ("broken", "chosen")
-        }
+        if "shown" in labels:
+            p_shown = p_c[ev].gather(-1, labels["shown"][ev, :, None])
+            res[name]["p_shown"] = p_shown.mean().item()
+        best = {k: max(res[name][k], key=lambda r: r["balanced_acc"]) for k in labels}
         print(
             name,
             f"p_broken {res[name]['p_broken']:.3f}",
