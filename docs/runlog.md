@@ -7,9 +7,25 @@ in `results/runs/`, and everything is also in W&B (project `fbrl`).
 
 As of 2026-11-28 morning. Aim: presentable results by Monday 11-30.
 
-- **θ_C s3, s4 continuations** (`grpo17c` 408327, array of 4, at most 3 GPUs): no line and noise
-  line, 200 steps each. Tests the prediction below.
+- Nothing running. Next candidates are on the results page under Next.
 - Results page: build scripts in `$FBRL/report/`; rebuild with `build_data.py` and `render.py`.
+
+## 2026-11-28 · The prediction held: the probe ranks how fast each θ_C seed checks again
+
+`grpo17c` 408327 finished. Steps to 80% find-alone on `distinct`, and follow-false at step 200:
+
+| seed | decision probe | steps, no line | steps, noise line | follow false at 200, no line | noise line |
+|---|---|---|---|---|---|
+| s0 | 0.99 | 25 | 25 | 59% | 17% |
+| s4 | 0.97 | 50 | 50 | 64% | 7% |
+| s2 | 0.95 | 50 | 25 | 93% | 81% |
+| s3 | 0.89 | 125 | 175 | 90% | 36% |
+| s1 | 0.88 | 150 | 200 | 71% | 50% |
+
+Predicted: s4 within 50, s3 about 100–200. Both landed. Three of five θ_C seeds carry a usable
+check the line keeps them from acting on. The other two carry a weaker one and relearn at about
+θ_0's pace. Every seed checks on its own by step 200 (≥ 89%) and still defers to a false line,
+much more without a noise line than with one.
 
 ## 2026-11-28 · θ_C s3, s4 at 1.7B, and a prediction before their continuations finish
 
