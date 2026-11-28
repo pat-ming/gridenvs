@@ -9,11 +9,31 @@ As of 2026-11-28 morning. Aim: presentable results by Monday 11-30.
 
 - **θ_C s3, s4 at 1.7B** (`grpo17` 407896, 407897, one GPU each): two more seeds for the
   latent-check result, then the same continuation and decision-probe tests.
-- **Decision probe over training** (`dec17ckpt` 407895): θ_C s0, s1 and θ_A s0 at checkpoints
-  100–500. When does the broken column become decodable, compared with when θ_A starts using it?
-- **Continued θ_C s1, no line** (407610), at step 175 of 200.
 - **Patching θ_C s0 and s1 at 1.7B** (`patch17` 407494), output in `$FBRL/interp17/patch/`.
 - Results page: build scripts in `$FBRL/report/`; rebuild with `build_data.py` and `render.py`.
+
+## 2026-11-28 · θ_C builds the check slowly without using it; θ_A builds and uses it at once
+
+`fbrl.decision` on checkpoints every 100 steps (`dec17ckpt` 407895,
+`results/interp/decision/decision17_ckpt.json`). Best-layer balanced accuracy for the broken column
+at the decision position, and the probability put on it with no line. Step 0 is θ_0, step 600 the
+final model.
+
+| step | θ_C s0 probe | θ_C s0 p_broken | θ_C s1 probe | θ_C s1 p_broken | θ_A s0 probe | θ_A s0 p_broken |
+|---|---|---|---|---|---|---|
+| 0 | 0.78 | 25% | 0.78 | 25% | 0.78 | 25% |
+| 100 | 0.78 | 28% | 0.82 | 25% | 0.80 | 27% |
+| 200 | 0.82 | 26% | 0.85 | 27% | 0.99 | 77% |
+| 300 | 0.87 | 33% | 0.88 | 25% | 1.00 | 80% |
+| 400 | 0.96 | 36% | 0.87 | 25% | 1.00 | 92% |
+| 500 | 0.99 | 34% | 0.90 | 27% | 1.00 | 83% |
+| 600 | 0.99 | 32% | 0.88 | 25% | | |
+
+θ_A gets the representation and the behavior in the same 100 steps. θ_C s0 builds the
+representation steadily over 600 steps while its line-free behavior barely moves. Nothing rewards
+that behavior while the true line is present, so the representation comes along with something
+else (likely reading the grid to fill in the right value). s1 barely moves past θ_0, matching its
+slower continuation. One run per arm, so the timing is a single example.
 
 ## 2026-11-28 · What θ_C picks without the line, and the finished continuations
 
