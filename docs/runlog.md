@@ -5,11 +5,55 @@ in `results/runs/`, and everything is also in W&B (project `fbrl`).
 
 ## In flight
 
-As of 2026-11-27 evening. Aim: presentable results by Monday 11-30.
+As of 2026-11-28 early morning. Aim: presentable results by Monday 11-30.
 
-- **1.7B GRPO** (W&B group `grpo17`): θ_C s2 (407330), θ_A s0 (407029) and θ_D s2 (397269_3)
-  are past step 325. Then cache activations and probe them like the others.
+- **Continued θ_C at 1.7B** (`grpo17c`, W&B group `grpo17_cont`): 200 steps from each θ_C final
+  with no line or a noise line. none s1 crashed packed (vLLM cache) and is rerunning alone
+  (407610); the other five are past step 125 (407482).
+- **Patching θ_C s0 and s1 at 1.7B** (`patch17` 407494, A6000 shard), output in
+  `$FBRL/interp17/patch/`.
 - Results page: build scripts in `$FBRL/report/`; rebuild with `build_data.py` and `render.py`.
+
+## 2026-11-28 · θ_C at 1.7B: the check is often learned and left unused
+
+**Setup.** All nine 1.7B runs are done. Four new measurements on them:
+- `fbrl.probe` on the three last seeds (θ_A s0, θ_C s2, θ_D s2).
+- `fbrl.decision`: probes at the position where the column is chosen (the " " after
+  `EDIT r `), for the broken column and for the column the model picks.
+- `fbrl.steer`: remove or swap the class-mean column subspace from the last prompt token on,
+  layers 16–27.
+- Continue each θ_C final for 200 GRPO steps with no line or a noise line (KL reference is θ_C
+  itself), and compare with how long θ_A and θ_D took to learn the column from θ_0.
+
+**Behavior.** H1 holds on 9 of 9 runs on `distinct`: θ_A and θ_D find the column alone 98–100%,
+θ_C 29, 32 and 50%, and θ_C follows a false line 100%. D(θ) is 0.95–1.0 for θ_C and at most 0.14
+for the rest.
+
+**Results** on `distinct`:
+
+| model | probe exact, last token | probe at decision | edits broken column | steps to 80%, no line / noise |
+|---|---|---|---|---|
+| θ_0 | 0.35 | 0.78 | 25% | 175–425 (θ_A, θ_D from θ_0) |
+| θ_C s0 | 0.89 | 0.99 | 32% | 25 / 25 |
+| θ_C s2 | 0.69 | 0.95 | 43% | 50 (so far) / 25 |
+| θ_C s1 | 0.38 | 0.88 | 26% | rerunning / not by 100 |
+| θ_A s1 | 0.97 | 1.00 | 94% | |
+| θ_D s0 | 0.96 | 1.00 | 94% | |
+
+**What it means.**
+- In θ_C s0, and to a lesser degree s2, the broken column is fully decodable at the very position
+  where the column is chosen, and the model picks a different one. Without the line it hooks up
+  within 25 steps, 7 to 17 times faster than learning from θ_0. So the line didn't stop these
+  seeds learning the check; it stopped them acting on it.
+- θ_C s1 looks like it never learned it, and its continuation hasn't moved.
+- The probe ranks the seeds in the same order as how fast the check comes back.
+- Reliance stays after the check returns: continued θ_C s0 follows a false line 50% of the time
+  at step 175 (no line) and 41% at step 125 (noise line).
+- Steering at the last prompt token doesn't test use. Removing the subspace costs θ_A only
+  99% → 93% of edits on the broken column, and swapping in another column's mean moves no model's
+  edits. The decision-position probe and the continuation runs carry the argument instead.
+- Every θ_C decodes its own pick about as well as the broken column (0.86–0.98), so it picks by
+  some other rule. Next is to find out what.
 
 ## 2026-11-27 · 1.7B probes: θ_C s0 computes the broken column and doesn't use it
 

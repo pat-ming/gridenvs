@@ -1,0 +1,123 @@
+{
+ "layers": [
+  16,
+  27
+ ],
+ "set": "distinct",
+ "n": 256,
+ "theta_C_s0": {
+  "model": "/engrfs/project/netanel.raviv/motti_k/fbrl/runs/grpo17_kl0.04_true_s0_20261127_182924_407030/checkpoints/final",
+  "intact": {
+   "success": 0.3134,
+   "on_V": 0.3154,
+   "on_next": 0.2283
+  },
+  "ablate": {
+   "success": 0.2574,
+   "on_V": 0.259,
+   "on_next": 0.2582
+  },
+  "swap": {
+   "success": 0.257,
+   "on_V": 0.2586,
+   "on_next": 0.2602
+  },
+  "random": {
+   "success": 0.3164,
+   "on_V": 0.3184,
+   "on_next": 0.2265
+  }
+ },
+ "theta_A_s1": {
+  "model": "/engrfs/project/netanel.raviv/motti_k/fbrl/runs/grpo17_kl0.04_none_s1_20261127_182924_407031/checkpoints/final",
+  "intact": {
+   "success": 0.9841,
+   "on_V": 0.99,
+   "on_next": 0.0017
+  },
+  "ablate": {
+   "success": 0.9172,
+   "on_V": 0.9267,
+   "on_next": 0.0037
+  },
+  "swap": {
+   "success": 0.9062,
+   "on_V": 0.9163,
+   "on_next": 0.0048
+  },
+  "random": {
+   "success": 0.9841,
+   "on_V": 0.9901,
+   "on_next": 0.0016
+  }
+ },
+ "theta_C_s1": {
+  "model": "/engrfs/project/netanel.raviv/motti_k/fbrl/runs/grpo17_kl0.04_true_s1_20261127_183131_407031/checkpoints/final",
+  "intact": {
+   "success": 0.1284,
+   "on_V": 0.2552,
+   "on_next": 0.261
+  },
+  "ablate": {
+   "success": 0.1155,
+   "on_V": 0.2593,
+   "on_next": 0.241
+  },
+  "swap": {
+   "success": 0.1153,
+   "on_V": 0.2584,
+   "on_next": 0.241
+  },
+  "random": {
+   "success": 0.1284,
+   "on_V": 0.256,
+   "on_next": 0.2611
+  }
+ },
+ "theta_D_s0": {
+  "model": "/engrfs/project/netanel.raviv/motti_k/fbrl/runs/grpo17_kl0.04_noise_s0_20261127_183131_407030/checkpoints/final",
+  "intact": {
+   "success": 0.9966,
+   "on_V": 1.0,
+   "on_next": 0.0
+  },
+  "ablate": {
+   "success": 0.9166,
+   "on_V": 0.918,
+   "on_next": 0.0019
+  },
+  "swap": {
+   "success": 0.9104,
+   "on_V": 0.9116,
+   "on_next": 0.0026
+  },
+  "random": {
+   "success": 0.9965,
+   "on_V": 1.0,
+   "on_next": 0.0
+  }
+ },
+ "theta0": {
+  "model": "/engrfs/project/netanel.raviv/motti_k/fbrl/models/sft-qwen3-1.7b",
+  "intact": {
+   "success": 0.0839,
+   "on_V": 0.2495,
+   "on_next": 0.25
+  },
+  "ablate": {
+   "success": 0.0702,
+   "on_V": 0.2513,
+   "on_next": 0.2443
+  },
+  "swap": {
+   "success": 0.0703,
+   "on_V": 0.2508,
+   "on_next": 0.2433
+  },
+  "random": {
+   "success": 0.0843,
+   "on_V": 0.2497,
+   "on_next": 0.2508
+  }
+ }
+}
