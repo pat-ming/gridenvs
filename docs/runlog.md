@@ -5,14 +5,36 @@ in `results/runs/`, and everything is also in W&B (project `fbrl`).
 
 ## In flight
 
-As of 2026-11-28 early morning. Aim: presentable results by Monday 11-30.
+As of 2026-11-28 morning. Aim: presentable results by Monday 11-30.
 
-- **Continued θ_C at 1.7B** (`grpo17c`, W&B group `grpo17_cont`): 200 steps from each θ_C final
-  with no line or a noise line. none s1 crashed packed (vLLM cache) and is rerunning alone
-  (407610); the other five are past step 125 (407482).
-- **Patching θ_C s0 and s1 at 1.7B** (`patch17` 407494, A6000 shard), output in
-  `$FBRL/interp17/patch/`.
+- **θ_C s3, s4 at 1.7B** (`grpo17` 407896, 407897, one GPU each): two more seeds for the
+  latent-check result, then the same continuation and decision-probe tests.
+- **Decision probe over training** (`dec17ckpt` 407895): θ_C s0, s1 and θ_A s0 at checkpoints
+  100–500. When does the broken column become decodable, compared with when θ_A starts using it?
+- **Continued θ_C s1, no line** (407610), at step 175 of 200.
+- **Patching θ_C s0 and s1 at 1.7B** (`patch17` 407494), output in `$FBRL/interp17/patch/`.
 - Results page: build scripts in `$FBRL/report/`; rebuild with `build_data.py` and `render.py`.
+
+## 2026-11-28 · What θ_C picks without the line, and the finished continuations
+
+**Pick rule.** `fbrl.decision` now saves the column probabilities after `EDIT r ` on the eval
+states (`results/interp/decision/decision17_pc.json`). Picks on line-free `distinct`, by column:
+
+| model | col 0 | col 1 | col 2 | col 3 | pick = broken column |
+|---|---|---|---|---|---|
+| θ_0 | 93% | 1% | 3% | 3% | 22% |
+| θ_C s0 | 56% | 28% | 5% | 12% | 31% |
+| θ_C s1 | 24% | 0% | 1% | 75% | 25% |
+| θ_C s2 | 5% | 7% | 18% | 70% | 44% |
+| θ_A s1 | 19% | 28% | 27% | 25% | 97% |
+
+With no index to read, θ_C falls back to a fixed column, with a small pull toward the broken one
+in s0 and s2. Rules that read the grid (the cell repeats in its row, the most common value) do no
+better than chance for any model.
+
+**Continuations, steps to 80% line-free.** θ_C s0: 25 (no line), 25 (noise). θ_C s2: 50, 25.
+θ_C s1: 150, 200, the fast end of the 175–425 it took θ_A and θ_D from θ_0. At step 200,
+following a false line is 59% (s0) and 93% (s2) with no line, 17% (s0) and 81% (s2) with noise.
 
 ## 2026-11-28 · θ_C at 1.7B: the check is often learned and left unused
 

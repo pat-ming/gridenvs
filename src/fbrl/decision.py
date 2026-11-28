@@ -99,6 +99,8 @@ def main():
             "model": path,
             "p_broken": p_c[ev].gather(-1, broken[ev, :, None]).mean().item(),
             "chosen_is_broken": (chosen[ev] == broken[ev]).float().mean().item(),
+            # (n_eval, row, column); eval state i is instance EVAL_SEED_START + i, m = 1
+            "p_c_eval": p_c[ev].tolist(),
             "broken": probe(X, broken, args.n_fit),
             "chosen": probe(X, chosen, args.n_fit),
         }
