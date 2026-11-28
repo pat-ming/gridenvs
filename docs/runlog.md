@@ -5,16 +5,43 @@ in `results/runs/`, and everything is also in W&B (project `fbrl`).
 
 ## In flight
 
-As of 2026-11-27 23:30. Aim: presentable results by Monday 11-30.
+As of 2026-11-27 evening. Aim: presentable results by Monday 11-30.
 
-- **1.7B GRPO** (W&B group `grpo17`): θ_D s2 (397269_3), θ_C s2 rerun alone (407330), θ_A s0
-  (407029, queued). Six done, see the 1.7B entry below.
-- **1.7B I(θ) probes** (`acts17` 407331, A6000 shard): line-free residuals for θ_0 and the six
-  finished 1.7B models, written to `$FBRL/interp17/`. Then run `fbrl.probe` on them.
-- **Recoverability** (`grpo_recover`): seeds 2–3 done, seeds 0–1 (407028_0) running.
-  **Line removed halfway** (`grpo_drop`): seeds 2–3 (397232_1) running. Compare `follow_false` per
-  eval step (`fbrl.placement --steps`).
-- **Patching θ_C s1 and θ_A s0** (`patch` 407045): θ_C s0 is done, see "Where θ_C reads the line".
+- **1.7B GRPO** (W&B group `grpo17`): θ_C s2 (407330), θ_A s0 (407029) and θ_D s2 (397269_3)
+  are past step 325. Then cache activations and probe them like the others.
+- Results page: build scripts in `$FBRL/report/`; rebuild with `build_data.py` and `render.py`.
+
+## 2026-11-27 · 1.7B probes: θ_C s0 computes the broken column and doesn't use it
+
+**Setup.** `fbrl.probe` on line-free residuals (`$FBRL/interp17/`, 2000 states per set) for θ_0
+and the six finished 1.7B models, with a shuffled-label control. Results in
+`results/interp/probe17_{distinct,ineq}_none.json`.
+
+**Results** on `distinct`, best layer:
+
+| model | layer | balanced acc | exact | line-free find_alone |
+|---|---|---|---|---|
+| θ_0 | 10 | 0.70 | 0.35 | |
+| θ_A s1 / s2 | 19 / 18 | 0.99 / 0.98 | 0.97 / 0.96 | 100 / 100 |
+| θ_D s0 / s1 | 19 / 18 | 0.98 / 0.99 | 0.96 / 0.97 | 100 / 98 |
+| θ_C s0 | 19 | 0.96 | 0.89 | 29 |
+| θ_C s1 | 28 | 0.73 | 0.38 | 32 |
+
+Controls stay at 0.48–0.53. On `ineq` nothing decodes (all at 0.53 or below).
+
+**What it means.**
+- θ_A and θ_D compute the column from about layer 16 on, as their behavior says.
+- θ_C s1 doesn't, so for it the line stopped the check from being learned.
+- θ_C s0 computes it almost as well as θ_A, yet its line-free edits miss it 71% of the time. The
+  line can suppress using the check, not only learning it. θ_C s2 will tell which is typical.
+- Worth testing: steer θ_C s0 along the probe direction, or patch its layer-19 residual into the
+  edit position, to see if the skill is intact and just disconnected.
+
+**Also finished.**
+- Patching on θ_C s1 matches s0 (the line's information leaves its token around layers 16–18;
+  top heads L0.H3, L13.H6). θ_A s0 shows nothing to patch (D = 0.03).
+- Recoverability now has 4 seeds each. At step 600 `distinct/follow_false` is 84–98% for drop
+  and 46, 68, 69 and 94% for recover, so noise undoes reliance slowly in three of four seeds.
 
 ## 2026-11-27 · 1.7B: without the line the model learns to find the broken column; with it, it doesn't
 
