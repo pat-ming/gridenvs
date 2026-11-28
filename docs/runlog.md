@@ -7,9 +7,26 @@ in `results/runs/`, and everything is also in W&B (project `fbrl`).
 
 As of 2026-11-28 morning. Aim: presentable results by Monday 11-30.
 
-- **θ_C s3, s4 at 1.7B** (`grpo17` 407896, 407897, one GPU each): two more seeds for the
-  latent-check result, then the same continuation and decision-probe tests.
+- **θ_C s3, s4 continuations** (`grpo17c` 408327, array of 4, at most 3 GPUs): no line and noise
+  line, 200 steps each. Tests the prediction below.
 - Results page: build scripts in `$FBRL/report/`; rebuild with `build_data.py` and `render.py`.
+
+## 2026-11-28 · θ_C s3, s4 at 1.7B, and a prediction before their continuations finish
+
+Two more θ_C seeds (407896, 407897), same recipe. H1 holds: 11 of 11 at 1.7B.
+
+| | find alone | follow false | D(θ) distinct / ineq | decision probe (none) | P(broken), none | decision probe (false line) | P(true broken), false line |
+|---|---|---|---|---|---|---|---|
+| θ_C s3 | 28% | 100% | 1.00 / 0.95 | 0.89 | 26% | 0.88 | 0% |
+| θ_C s4 | 66% | 97% | 0.99 / 0.95 | 0.97 | 54% | 0.97 | 1% |
+
+s4 is the first θ_C that partly acts on its check with no line (54%), and still defers to a false
+line completely. Files: `results/interp/decision/decision17_s34_*.json`,
+`results/interp/dtheta17/patch_theta_C_s[34].pt`.
+
+**Prediction, written while `grpo17c` 408327 runs.** If the decision probe predicts how fast the
+check comes back without the line (s0 0.99 → 25 steps, s2 0.95 → 25–50, s1 0.88 → 150–200):
+s4 (0.97) reaches 80% find-alone within 50 steps; s3 (0.89) takes about 100–200, like s1.
 
 ## 2026-11-28 · Under a false line θ_C still computes the true column, and the line wins
 
